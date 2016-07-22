@@ -26,7 +26,7 @@ Simply download the latest `licenser.phar` file from our releases page:
 
 [Latest release](https://github.com/rafrsr/licenser/releases/latest)
 
-Uncompress the phar fom zip package and now verify everything works by running this:
+Verify everything works by running this:
 
 ````
 php licenser.phar --version
