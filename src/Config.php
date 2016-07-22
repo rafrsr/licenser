@@ -14,9 +14,8 @@
 namespace Rafrsr\Licenser;
 
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Filesystem\Exception\FileNotFoundException;
 use Symfony\Component\Finder\Finder;
-use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
-use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -68,14 +67,14 @@ class Config
             if (is_dir($source)) {
                 $finder->name('*.php')->in(realpath($source));
             } else {
-                $file = new File($source);
+                $file = new \SplFileInfo($source);
                 $finder
                     ->name($file->getFilename())
                     ->depth(0)
                     ->in($file->getPath());
             }
         } else {
-            throw new FileNotFoundException($source);
+            throw new FileNotFoundException(null, 0, null, $source);
         }
 
         $params = [];
@@ -120,7 +119,7 @@ class Config
     public static function createFromYml($ymlFile)
     {
         $config = new static();
-        $file = new File(realpath($ymlFile));
+        $file = new \SplFileInfo(realpath($ymlFile));
         $workingDir = $file->getPath();
 
         $yamlConfig = file_get_contents($file->getPathname());
