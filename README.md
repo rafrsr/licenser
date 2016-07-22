@@ -17,12 +17,12 @@ Automates the prepending of a license header doc block to your directory(ies) of
 
 ## Install
 
-You can grab a copy of rafrsr/licenser in either of the following ways.
+You can grab a copy of `rafrsr/licenser` in either of the following ways.
 
 ### As a phar
 
 You can simply download a pre-compiled and ready-to-use version as a Phar to any directory. 
-Simply download the latest `licenser.phar.zip` file from our releases page:
+Simply download the latest `licenser.phar` file from our releases page:
 
 [Latest release](https://github.com/rafrsr/licenser/releases/latest)
 
@@ -40,7 +40,7 @@ There's no separate update procedure, simply download the latest release again a
 
 ### Installation using Composer
 
-Alternatively, you can also install Licenser as part of your development dependencies. 
+Alternatively, you can also install **Licenser** as part of your development dependencies. 
 You will likely want to use the require-dev section to exclude rafrsr/licenser in your production environment.
 
 1. [Install composer](https://getcomposer.org/download/)
@@ -57,10 +57,10 @@ Just run `composer update rafrsr/licenser` to update to the latest release.
 
 Licenser supports the following built-in licenses and headers:
 
-- The Apache 2.0 license (referred to as `apache2.0` in Licenser)
-- The MIT license (referred to as `mit` in Licenser)
-- Default - Is not a license, is a common header to add to any project (referred to as `default` in Licenser)
-- Package - Similar to default but allow a package name (referred to as `package` in Licenser)
+- The Apache 2.0 license (referred to as `apache2.0` in **Licenser**)
+- The MIT license (referred to as `mit` in **Licenser**)
+- Default - Is not a license, is a common header to add to any project (referred to as `default` in **Licenser**)
+- Symfony - Is a header commonly used in symfony components and bundles (referred to as `symfony` in **Licenser**)
 
 To use one of these built-in licenses you just replace the path to your custom licenses file with the name of the built-in license instead. 
 For example if you wanted to use the MIT license then you would run something like:
@@ -75,7 +75,7 @@ The `default` header is used when run something like this:
 ````
 
 ### Value replacement in built-in licenses
-When using a built-in license the Licenser will replace special placeholders with custom values. 
+When using a built-in license the **Licenser** will replace special placeholders with custom values. 
 Placeholder can vary according to license:
 
 | license  | placeholders  |   
@@ -118,7 +118,7 @@ To process this license:
 
 ### Checking files for correct license
 
-Licenser also allows you to check your source files for correct license information.
+**Licenser** also allows you to check your source files for correct license information.
 It will warn you if there are any source files that do not have a license header that matches the options you provide.
 
 ````bash
@@ -145,7 +145,7 @@ verify all changes to see affected files before adding headers.
 ### YML configuration per project
 
 Licenser support create a `.yml` file for each project with custom settings. 
-Is helpful to use a global installation of Licenser and same commandline for all projects.
+Is helpful to use a global installation of **Licenser** and same commandline for all projects.
 
 Create a yml file under your project directory
 
@@ -184,7 +184,6 @@ In the second example the `finder` is overwritten and apply the given config to 
 - **parameters:** _[array]_ array of parameters to pass to template  
 
 > NOTE: can reference to a constant in parameters using `@` before the name of the constant, e.g: `@Rafrsr\Licenser\Licenser::VERSION`
-
 
 ### Caution
 
