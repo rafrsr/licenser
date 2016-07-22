@@ -46,6 +46,7 @@ trait LicenseTesterSetUpTrait
 
         $temp = sys_get_temp_dir();
         $this->tempDir = $temp.DIRECTORY_SEPARATOR.'licenser';
+        $fileSystem->remove($this->tempDir);
         $fileSystem->mkdir($this->tempDir);
         $this->fixturesDir = __DIR__.DIRECTORY_SEPARATOR.'Fixtures';
         $fileSystem->mirror($this->fixturesDir.DIRECTORY_SEPARATOR.'origin', $this->tempDir, null, ['override' => true]);

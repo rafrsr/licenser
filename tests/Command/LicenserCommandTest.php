@@ -66,20 +66,22 @@ class LicenserCommandTest extends \PHPUnit_Framework_TestCase
         copy(implode(DIRECTORY_SEPARATOR, [$this->fixturesDir, '.licenser.yml']), $this->tempDir.DIRECTORY_SEPARATOR.'.licenser.yml');
         $fileSystem = new Filesystem();
         $fileSystem->mkdir($this->tempDir.DIRECTORY_SEPARATOR.'src');
+        $fileSystem->mkdir($this->tempDir.DIRECTORY_SEPARATOR.'src'.DIRECTORY_SEPARATOR.'other');
+        $fileSystem->touch($this->tempDir.DIRECTORY_SEPARATOR.'src'.DIRECTORY_SEPARATOR.'other'.DIRECTORY_SEPARATOR.'file.php');
 
         $licenser = self::getMockBuilder(Licenser::class)->disableOriginalConstructor()->getMock();
         $licenser->expects(self::once())->method('process')->with(Licenser::MODE_NORMAL);
 
         $config = Config::create()
             ->setLicense(file_get_contents(implode(DIRECTORY_SEPARATOR, [__DIR__, '..', '..', 'src', 'licenses', 'default'])))
-            ->setFinder(Finder::create()->name('file.php')->in(realpath($this->tempDir)));
+            ->setFinder(Finder::create()->name('file.php')->in(realpath($this->tempDir).DIRECTORY_SEPARATOR.'src')->path('other'));
 
         $command = self::getMockBuilder(LicenserCommand::class)->setMethods(['buildLicenser'])->getMock();
         $command->expects(self::once())->method('buildLicenser')->with($config)->willReturn($licenser);
 
         $input = new ArrayInput(
             [
-                'source' => realpath($this->tempDir.DIRECTORY_SEPARATOR.'file.php'),
+                'source' => $this->tempDir.DIRECTORY_SEPARATOR.'src'.DIRECTORY_SEPARATOR.'other'.DIRECTORY_SEPARATOR.'file.php',
                 '--config' => $this->tempDir.DIRECTORY_SEPARATOR.'.licenser.yml',
             ]
         );
@@ -92,20 +94,21 @@ class LicenserCommandTest extends \PHPUnit_Framework_TestCase
         copy(implode(DIRECTORY_SEPARATOR, [$this->fixturesDir, '.licenser.yml']), $this->tempDir.DIRECTORY_SEPARATOR.'.licenser.yml');
         $fileSystem = new Filesystem();
         $fileSystem->mkdir($this->tempDir.DIRECTORY_SEPARATOR.'src');
+        $fileSystem->mkdir($this->tempDir.DIRECTORY_SEPARATOR.'src'.DIRECTORY_SEPARATOR.'other');
 
         $licenser = self::getMockBuilder(Licenser::class)->disableOriginalConstructor()->getMock();
         $licenser->expects(self::once())->method('process')->with(Licenser::MODE_NORMAL);
 
         $config = Config::create()
             ->setLicense(file_get_contents(implode(DIRECTORY_SEPARATOR, [__DIR__, '..', '..', 'src', 'licenses', 'default'])))
-            ->setFinder(Finder::create()->name('*.php')->in(realpath(sys_get_temp_dir())));
+            ->setFinder(Finder::create()->name('*.php')->in(realpath($this->tempDir).DIRECTORY_SEPARATOR.'src')->path('other'));
 
         $command = self::getMockBuilder(LicenserCommand::class)->setMethods(['buildLicenser'])->getMock();
         $command->expects(self::once())->method('buildLicenser')->with($config)->willReturn($licenser);
 
         $input = new ArrayInput(
             [
-                'source' => sys_get_temp_dir(),
+                'source' => $this->tempDir.DIRECTORY_SEPARATOR.'src'.DIRECTORY_SEPARATOR.'other',
                 '--config' => $this->tempDir.DIRECTORY_SEPARATOR.'.licenser.yml',
             ]
         );
