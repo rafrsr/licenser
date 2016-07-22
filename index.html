@@ -1,35 +1,34 @@
 <!DOCTYPE html>
-<html>
+<html lang="en-us">
   <head>
-    <meta charset='utf-8'>
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <meta charset="UTF-8">
+    <title>Licenser by rafrsr</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
     <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
-
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-
-    <title>Licenser by rafrsr</title>
   </head>
-
   <body>
-    <header>
-      <div class="inner">
-        <h1>Licenser</h1>
-        <h2>Adds license headers to your source files</h2>
-        <a href="https://github.com/rafrsr/licenser" class="button"><small>View project on</small> GitHub</a>
-      </div>
-    </header>
+    <section class="page-header">
+      <h1 class="project-name">Licenser</h1>
+      <h2 class="project-tagline">Adds license headers to your source files</h2>
+      <a href="https://github.com/rafrsr/licenser" class="btn">View on GitHub</a>
+      <a href="https://github.com/rafrsr/licenser/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/rafrsr/licenser/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
 
-    <div id="content-wrapper">
-      <div class="inner clearfix">
-        <section id="main-content">
-          <h1>
+    <section class="main-content">
+      <h1>
 <a id="licenser" class="anchor" href="#licenser" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Licenser</h1>
+
+<p><a href="https://travis-ci.org/rafrsr/licenser"><img src="https://travis-ci.org/rafrsr/licenser.svg?branch=master" alt="Build Status"></a>
+<a href="https://coveralls.io/github/rafrsr/licenser?branch=master"><img src="https://coveralls.io/repos/rafrsr/licenser/badge.svg?branch=master&amp;service=github" alt="Coverage Status"></a>
+<a href="https://scrutinizer-ci.com/g/rafrsr/licenser/?branch=master"><img src="https://scrutinizer-ci.com/g/rafrsr/licenser/badges/quality-score.png?b=master" alt="Scrutinizer Code Quality"></a>
+<a href="https://packagist.org/packages/rafrsr/licenser"><img src="https://poser.pugx.org/rafrsr/licenser/version" alt="Latest Stable Version"></a>
+<a href="//packagist.org/packages/rafrsr/licenser"><img src="https://poser.pugx.org/rafrsr/licenser/v/unstable" alt="Latest Unstable Version"></a>
+<a href="https://packagist.org/packages/rafrsr/licenser"><img src="https://poser.pugx.org/rafrsr/licenser/downloads" alt="Total Downloads"></a>
+<a href="https://packagist.org/packages/rafrsr/licenser"><img src="https://poser.pugx.org/rafrsr/licenser/license" alt="License"></a></p>
 
 <p>Automates the prepending of a license header doc block to your directory(ies) of source files.</p>
 
@@ -37,17 +36,55 @@
 <li>Accept a directory of source files or a path to a single source file to process</li>
 <li>Accept a file path containing your custom license doc block</li>
 <li>Can check your source files for the correct license information</li>
+<li>Support global install with <code>.yml</code> Configuration per project</li>
 </ul>
 
+<h2>
+<a id="install" class="anchor" href="#install" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Install</h2>
+
+<p>You can grab a copy of rafrsr/licenser in either of the following ways.</p>
+
 <h3>
-<a id="install" class="anchor" href="#install" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Install</h3>
+<a id="as-a-phar" class="anchor" href="#as-a-phar" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>As a phar</h3>
+
+<p>You can simply download a pre-compiled and ready-to-use version as a Phar to any directory. 
+Simply download the latest <code>licenser.phar.zip</code> file from our releases page:</p>
+
+<p><a href="https://github.com/rafrsr/licenser/releases/latest">Latest release</a></p>
+
+<p>Uncompress the phar fom zip package and now verify everything works by running this:</p>
+
+<pre><code>php licenser.phar --version
+</code></pre>
+
+<p>Now can copy this tool when you need to use in any project</p>
+
+<h4>
+<a id="updating-phar" class="anchor" href="#updating-phar" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Updating phar</h4>
+
+<p>There's no separate update procedure, simply download the latest release again and overwrite the existing phar.</p>
+
+<h3>
+<a id="installation-using-composer" class="anchor" href="#installation-using-composer" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation using Composer</h3>
+
+<p>Alternatively, you can also install Licenser as part of your development dependencies. 
+You will likely want to use the require-dev section to exclude rafrsr/licenser in your production environment.</p>
 
 <ol>
 <li><a href="https://getcomposer.org/download/">Install composer</a></li>
 <li>Execute: <code>require rafrsr/licenser --dev</code>
 </li>
-<li>Run <code>./bin/licenser /path/to/source/files /path/to/license/file</code> to process source files</li>
+<li>Run <code>./vendor/bin/licenser --version</code>
+</li>
 </ol>
+
+<h4>
+<a id="updating-dependency" class="anchor" href="#updating-dependency" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Updating dependency</h4>
+
+<p>Just run <code>composer update rafrsr/licenser</code> to update to the latest release.</p>
+
+<h2>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage</h2>
 
 <h3>
 <a id="using-a-built-in-license-type" class="anchor" href="#using-a-built-in-license-type" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Using a built-in license type</h3>
@@ -103,6 +140,9 @@ Placeholder can vary according to license:</p>
 </tbody>
 </table>
 
+<h5>
+<a id="eg" class="anchor" href="#eg" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>e.g.</h5>
+
 <div class="highlight highlight-source-shell"><pre>./bin/licenser /path/to/files -p author:<span class="pl-s"><span class="pl-pds">"</span>Author Name &lt;email@example.com&gt;<span class="pl-pds">"</span></span> -p version:1.0
 ./bin/licenser /path/to/files mit -p author:<span class="pl-s"><span class="pl-pds">"</span>Author Name &lt;email@example.com&gt;<span class="pl-pds">"</span></span>
 ./bin/licenser /path/to/files apache2.0 -p author:<span class="pl-s"><span class="pl-pds">"</span>Author Name &lt;email@example.com&gt;<span class="pl-pds">"</span></span>
@@ -115,7 +155,7 @@ Placeholder can vary according to license:</p>
 License templates are processed using <a href="http://twig.sensiolabs.org/">Twig</a>, then can use any twig feature.</p>
 
 <h5>
-<a id="eg" class="anchor" href="#eg" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>e.g.</h5>
+<a id="eg-1" class="anchor" href="#eg-1" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>e.g.</h5>
 
 <pre><code>This file is part of the {{ package }}.
 
@@ -168,7 +208,7 @@ Is helpful to use a global installation of Licenser and same commandline for all
 <p>Create a yml file under your project directory</p>
 
 <h4>
-<a id="eg-1" class="anchor" href="#eg-1" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>e.g:</h4>
+<a id="eg-2" class="anchor" href="#eg-2" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>e.g:</h4>
 
 <div class="highlight highlight-source-yaml"><pre><span class="pl-c">#.licenser.yml</span>
 <span class="pl-s"><span class="pl-ent">finder:</span></span>
@@ -181,10 +221,15 @@ Is helpful to use a global installation of Licenser and same commandline for all
    <span class="pl-s"><span class="pl-ent">package:</span> <span class="pl-s">Licenser</span></span>
    <span class="pl-s"><span class="pl-ent">version:</span> <span class="pl-s"><span class="pl-pds">'</span>@Rafrsr<span class="pl-cce">\L</span>icenser<span class="pl-cce">\L</span>icenser::VERSION<span class="pl-pds">'</span></span></span></pre></div>
 
-<h4>
-<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage</h4>
+<p>and execute</p>
 
 <div class="highlight highlight-source-shell"><pre>./bin/licenser --config=.licenser.yml</pre></div>
+
+<p>or</p>
+
+<div class="highlight highlight-source-shell"><pre>./bin/licenser MyClass.php --config=.licenser.yml</pre></div>
+
+<p>In the second example the <code>finder</code> is overwritten and apply the given config to given file or directory.</p>
 
 <h3>
 <a id="yml-settings" class="anchor" href="#yml-settings" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>YML Settings</h3>
@@ -224,24 +269,14 @@ the tool as it is still experimental.</p>
 <a id="copyright" class="anchor" href="#copyright" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Copyright</h2>
 
 <p>This project is licensed under the <a href="LICENSE">MIT license</a>.</p>
-        </section>
 
-        <aside id="sidebar">
-          <a href="https://github.com/rafrsr/licenser/zipball/master" class="button">
-            <small>Download</small>
-            .zip file
-          </a>
-          <a href="https://github.com/rafrsr/licenser/tarball/master" class="button">
-            <small>Download</small>
-            .tar.gz file
-          </a>
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/rafrsr/licenser">Licenser</a> is maintained by <a href="https://github.com/rafrsr">rafrsr</a>.</span>
 
-          <p class="repo-owner"><a href="https://github.com/rafrsr/licenser"></a> is maintained by <a href="https://github.com/rafrsr">rafrsr</a>.</p>
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
 
-          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
-        </aside>
-      </div>
-    </div>
+    </section>
 
   
   </body>
