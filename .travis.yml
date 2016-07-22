@@ -11,9 +11,8 @@ matrix:
         - php: hhvm
 
 install:
-  - composer self-update
-  - composer clear-cache
-  - composer install --prefer-dist
+  - travis_retry composer global require hirak/prestissimo
+  - travis_retry composer update --no-interaction
 
 script:
   - mkdir -p build/logs
