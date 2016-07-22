@@ -8,7 +8,7 @@
  *
  * @author Rafael SR <https://github.com/rafrsr>
  * @package Licenser
- * @version 1.0.1
+ * @version 1.0.2
  */
 
 namespace Rafrsr\Licenser\Tests;
