@@ -8,7 +8,7 @@
  *
  * @author Rafael SR <https://github.com/rafrsr>
  * @package Licenser
- * @version 1.0.1
+ * @version 1.0.2
  */
 
 namespace Rafrsr\Licenser\Tests;
@@ -321,6 +321,25 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         );
 
         self::assertEquals($config, Config::createFromYml($yml));
+    }
+
+
+    public function testCreateFromYmlCustomizeFinderInvalidMethod()
+    {
+        $yml = $this->buildYml(
+            [
+                'finder' =>
+                    [
+                        'in' => [
+                            'licenser',
+                            'other',
+                        ],
+                        'find' => '*',
+                    ],
+            ]
+        );
+        self::setExpectedExceptionRegExp(\InvalidArgumentException::class, '/The method "Finder::find" does not exist/');
+        Config::createFromYml($yml);
     }
 
     public function testCreateFromYmlWithMissingFinderIn()
