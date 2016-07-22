@@ -179,6 +179,15 @@ In the second example the `finder` is overwritten and apply the given config to 
 - **finder:** used to create instance of Finder to locate source files
     - **in:** _[array, string]_ relative dir to find files
     - **name:** _[array, string]_ name of files to process (default: *.php)
+    - **exclude:** _[array, string]_ Exclude directories
+    - **path**: _[array, string]_ Restrict files and directories by path
+    - **notPath**: _[array, string]_ Exclude files and directories by path
+    - **size**: _[array, string]_ Restrict by a size, e.g. ['>= 1K','<= 2K']
+    - **date**: _[array, string]_ Restrict files by last modified dates
+    
+> To see all available options and usage refer to: [Finder](http://symfony.com/doc/current/components/finder.html).
+> All options given in this configuration are used to build a instance of Finder.
+    
 - **license:**  _[string]_ name of build-in license to use or relative filename    
 - **license_content:**  _[string]_ alternative to create your license inline without reference to any file
 - **parameters:** _[array]_ array of parameters to pass to template  

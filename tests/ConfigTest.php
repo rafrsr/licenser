@@ -280,6 +280,18 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
                             realpath(sys_get_temp_dir().DIRECTORY_SEPARATOR.'other'),
                         ]
                     )
+                    ->notPath('notPath')
+                    ->contains('license')
+                    ->path('dir')
+                    ->path('other')
+                    ->exclude('*Test.php')
+                    ->exclude('config.php')
+                    ->ignoreDotFiles(true)
+                    ->followLinks()
+                    ->depth(2)
+                    ->notContains('license')
+                    ->size('>= 1K')
+                    ->date('yesterday')
             );
 
         $yml = $this->buildYml(
@@ -294,6 +306,16 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
                             '*.php',
                             '*.php4',
                         ],
+                        'notPath' => 'notPath',
+                        'contains' => 'license',
+                        'path' => ['dir', 'other'],
+                        'exclude' => ['*Test.php', 'config.php'],
+                        'ignoreDotFiles' => true,
+                        'followLinks' => true,
+                        'depth' => 2,
+                        'notContains' => 'license',
+                        'size' => '>= 1K',
+                        'date' => 'yesterday',
                     ],
             ]
         );
