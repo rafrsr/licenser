@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/rafrsr/licenser.svg?branch=master)](https://travis-ci.org/rafrsr/licenser)
 [![Coverage Status](https://coveralls.io/repos/rafrsr/licenser/badge.svg?branch=master&service=github)](https://coveralls.io/github/rafrsr/licenser?branch=master)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/rafrsr/licenser/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/rafrsr/licenser/?branch=master)
 [![Latest Stable Version](https://poser.pugx.org/rafrsr/licenser/version)](https://packagist.org/packages/rafrsr/licenser)
 [![Latest Unstable Version](https://poser.pugx.org/rafrsr/licenser/v/unstable)](//packagist.org/packages/rafrsr/licenser)
 [![Total Downloads](https://poser.pugx.org/rafrsr/licenser/downloads)](https://packagist.org/packages/rafrsr/licenser)
@@ -12,6 +13,7 @@ Automates the prepending of a license header doc block to your directory(ies) of
 - Accept a directory of source files or a path to a single source file to process
 - Accept a file path containing your custom license doc block
 - Can check your source files for the correct license information
+- Support global install with `.yml` Configuration per project
 
 ### Install
 
