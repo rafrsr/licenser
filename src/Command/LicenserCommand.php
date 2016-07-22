@@ -104,20 +104,33 @@ class LicenserCommand extends Command
                 && realpath($source) !== realpath($configFile)//ignore run the command in the config file
             ) {
                 //TODO: find a best way to do this without reflection
+                $source = realpath($source);
                 $finderReflection = new \ReflectionClass(Finder::class);
                 $dirsProperty = $finderReflection->getProperty('dirs');
+                $pathsProperty = $finderReflection->getProperty('paths');
                 $dirsProperty->setAccessible(true);
-                if (is_dir($source)) {
-                    $dirsProperty->setValue($config->getFinder(), [realpath($source)]);
-                } else {
+                $pathsProperty->setAccessible(true);
+                //obtaining related path based on "in" directories
+                //allowing filter results using the finder config
+                foreach ($dirsProperty->getValue($config->getFinder()) as $in) {
+                    if (strpos($source, $in) !== false) {
+                        $path = str_replace($in, null, $source);
+                        //remove any \ or / in the path start
+                        $path = preg_replace('/^[\/\\\]/', null, $path);
+                        if (is_file($source)) {
+                            $path = pathinfo($path)['dirname'];
+                        }
+                        $pathsProperty->setValue($config->getFinder(), [$path]);
+                    }
+                }
+
+                if (is_file($source)) {
                     $file = new \SplFileInfo($source);
-                    $dirsProperty->setValue($config->getFinder(), [realpath($file->getPath())]);
                     $nameProperty = $finderReflection->getProperty('names');
                     $nameProperty->setAccessible(true);
                     $nameProperty->setValue($config->getFinder(), [$file->getFilename()]);
                 }
             }
-
         } else {
             $config = Config::createFromInput($input);
         }
