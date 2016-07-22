@@ -3,12 +3,12 @@
 /*
  * LICENSE: This file is subject to the terms and conditions defined in
  * file 'LICENSE', which is part of this source code package.
- * 
+ *
  * @copyright 2016 Copyright(c) - All rights reserved.
- * 
+ *
  * @author Rafael SR <https://github.com/rafrsr>
  * @package Licenser
- * @version 1.0.0-alpha
+ * @version 1.0.1
  */
 
 namespace Rafrsr\Licenser\Command;
@@ -20,6 +20,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Finder\Finder;
 
 /**
  * LicenserCommand
@@ -93,8 +94,30 @@ class LicenserCommand extends Command
             $mode = Licenser::MODE_DRY_RUN;
         }
 
-        if ($input->getOption('config')) {
-            $config = Config::createFromYml($input->getOption('config'));
+        if ($configFile = $input->getOption('config')) {
+            $config = Config::createFromYml($configFile);
+
+            //allow source override by command
+            //https://github.com/rafrsr/licenser/issues/1
+            if (($source = $input->getArgument('source'))
+                && file_exists($source)
+                && realpath($source) !== realpath($configFile)//ignore run the command in the config file
+            ) {
+                //TODO: find a best way to do this without reflection
+                $finderReflection = new \ReflectionClass(Finder::class);
+                $dirsProperty = $finderReflection->getProperty('dirs');
+                $dirsProperty->setAccessible(true);
+                if (is_dir($source)) {
+                    $dirsProperty->setValue($config->getFinder(), [realpath($source)]);
+                } else {
+                    $file = new \SplFileInfo($source);
+                    $dirsProperty->setValue($config->getFinder(), [realpath($file->getPath())]);
+                    $nameProperty = $finderReflection->getProperty('names');
+                    $nameProperty->setAccessible(true);
+                    $nameProperty->setValue($config->getFinder(), [$file->getFilename()]);
+                }
+            }
+
         } else {
             $config = Config::createFromInput($input);
         }

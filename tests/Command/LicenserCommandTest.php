@@ -17,6 +17,7 @@ use Rafrsr\Licenser\Tests\LicenseTesterSetUpTrait;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\Console\Tests\Fixtures\DummyOutput;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Yaml\Yaml;
 
@@ -50,6 +51,58 @@ class LicenserCommandTest extends \PHPUnit_Framework_TestCase
         $input = new ArrayInput(
             [
                 'source' => realpath($this->tempDir),
+            ]
+        );
+        $output = new DummyOutput();
+        $command->run($input, $output);
+    }
+
+    public function testBasicLicenserOverrideConfigSource()
+    {
+        copy(implode(DIRECTORY_SEPARATOR, [$this->fixturesDir, '.licenser.yml']), $this->tempDir.DIRECTORY_SEPARATOR.'.licenser.yml');
+        $fileSystem = new Filesystem();
+        $fileSystem->mkdir($this->tempDir.DIRECTORY_SEPARATOR.'src');
+
+        $licenser = self::getMockBuilder(Licenser::class)->disableOriginalConstructor()->getMock();
+        $licenser->expects(self::once())->method('process')->with(Licenser::MODE_NORMAL);
+
+        $config = Config::create()
+            ->setLicense(file_get_contents(implode(DIRECTORY_SEPARATOR, [__DIR__, '..', '..', 'src', 'licenses', 'default'])))
+            ->setFinder(Finder::create()->name('file.php')->in(realpath($this->tempDir)));
+
+        $command = self::getMockBuilder(LicenserCommand::class)->setMethods(['buildLicenser'])->getMock();
+        $command->expects(self::once())->method('buildLicenser')->with($config)->willReturn($licenser);
+
+        $input = new ArrayInput(
+            [
+                'source' => realpath($this->tempDir.DIRECTORY_SEPARATOR.'file.php'),
+                '--config' => $this->tempDir.DIRECTORY_SEPARATOR.'.licenser.yml',
+            ]
+        );
+        $output = new DummyOutput();
+        $command->run($input, $output);
+    }
+
+    public function testBasicLicenserOverrideConfigSourceDirectory()
+    {
+        copy(implode(DIRECTORY_SEPARATOR, [$this->fixturesDir, '.licenser.yml']), $this->tempDir.DIRECTORY_SEPARATOR.'.licenser.yml');
+        $fileSystem = new Filesystem();
+        $fileSystem->mkdir($this->tempDir.DIRECTORY_SEPARATOR.'src');
+
+        $licenser = self::getMockBuilder(Licenser::class)->disableOriginalConstructor()->getMock();
+        $licenser->expects(self::once())->method('process')->with(Licenser::MODE_NORMAL);
+
+        $config = Config::create()
+            ->setLicense(file_get_contents(implode(DIRECTORY_SEPARATOR, [__DIR__, '..', '..', 'src', 'licenses', 'default'])))
+            ->setFinder(Finder::create()->name('*.php')->in(realpath(sys_get_temp_dir())));
+
+        $command = self::getMockBuilder(LicenserCommand::class)->setMethods(['buildLicenser'])->getMock();
+        $command->expects(self::once())->method('buildLicenser')->with($config)->willReturn($licenser);
+
+        $input = new ArrayInput(
+            [
+                'source' => sys_get_temp_dir(),
+                '--config' => $this->tempDir.DIRECTORY_SEPARATOR.'.licenser.yml',
             ]
         );
         $output = new DummyOutput();
