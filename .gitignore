@@ -1,6 +1,9 @@
 composer.phar
 /vendor/
 
+# compiled file
+bin/licenser.phar
+
 # project based files
 .idea/
 .project
