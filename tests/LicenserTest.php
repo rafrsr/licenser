@@ -65,6 +65,7 @@ EOS;
  * file 'LICENSE', which is part of this source code package.
  * 
  * @copyright 2016 Copyright(c) - All rights reserved.
+ * 
  * @author Rafael SR <https://github.com/rafrsr>
  */
 EOS;
