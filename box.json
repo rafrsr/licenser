@@ -1,0 +1,30 @@
+{
+  "output": "licenser.phar",
+  "chmod": "0755",
+  "main": "bin/licenser",
+  "compactors": [
+    "Herrera\\Box\\Compactor\\Php"
+  ],
+  "directories": [
+    "src"
+  ],
+  "files": [
+    "LICENSE"
+  ],
+  "finder": [
+    {
+      "name": [
+        "*.php"
+      ],
+      "exclude": [
+        "tests",
+        "Tests"
+      ],
+      "in": [
+        "vendor"
+      ]
+    }
+  ],
+  "git-version": "package_version",
+  "stub": true
+}
