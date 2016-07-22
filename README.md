@@ -39,16 +39,16 @@ Placeholder can vary according to license:
 
 | license  | placeholders  |   
 |---|---|
-| default  | author  |
+| default  | author, package, version  |
 | mit  | author  | 
 | apache2.0  | author  | 
-| package  | author, package  |
+| symfony  | author, package  |
 
 ````bash
-./bin/licenser /path/to/files -p author:"Author Name <email@example.com>"
+./bin/licenser /path/to/files -p author:"Author Name <email@example.com>" -p version:1.0
 ./bin/licenser /path/to/files mit -p author:"Author Name <email@example.com>"
 ./bin/licenser /path/to/files apache2.0 -p author:"Author Name <email@example.com>"
-./bin/licenser /path/to/files package -p author:"Author Name <email@example.com>" -p package:MyPHPPackage
+./bin/licenser /path/to/files symfony -p author:"Author Name <email@example.com>" -p package:MyPHPPackage
 ````
 ### Creating your custom license template
 
@@ -99,6 +99,43 @@ verify all changes to see affected files before adding headers.
 ````bash
 ./bin/licenser /path/to/files mit --dry-run -vv
 ````
+
+### YML configuration per project
+
+Licenser support create a `.yml` file for each project with custom settings. 
+Is helpful to use a global installation of Licenser and same commandline for all projects.
+
+Create a yml file under your project directory
+
+#### e.g:
+````yml
+#.licenser.yml
+finder:
+  in: 
+    - src
+    - tests
+license: default
+parameters:
+   author: Rafael SR <https://github.com/rafrsr>
+   package: Licenser
+   version: '@Rafrsr\Licenser\Licenser::VERSION'
+````
+
+#### Usage
+````bash
+./bin/licenser --config=.licenser.yml
+````
+
+### YML Settings
+
+- **finder:** used to create instance of Finder to locate source files
+    - **in:** _[array, string]_ relative dir to find files
+    - **name:** _[array, string]_ name of files to process (default: *.php)
+- **license:**  _[string]_ name of build-in license to use or relative filename    
+- **license_content:**  _[string]_ alternative to create your license inline without reference to any file
+- **parameters:** _[array]_ array of parameters to pass to template  
+
+> NOTE: can reference to a constant in parameters using `@` before the name of the constant, e.g: `@Rafrsr\Licenser\Licenser::VERSION`
 
 ### Caution
 

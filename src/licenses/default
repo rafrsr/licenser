@@ -2,4 +2,9 @@ LICENSE: This file is subject to the terms and conditions defined in
 file 'LICENSE', which is part of this source code package.
 
 @copyright {{ 'now'|date('Y') }} Copyright(c) - All rights reserved.
-{% if author is defined and author %}@author {{ author|raw }}{% endif %}
+
+{% if author %}@author {{ author|raw }}{% endif %}
+
+{% if package %}@package {{ package|raw }}{% endif %}
+
+{% if version %}@version {{ version|raw }}{% endif %}

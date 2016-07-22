@@ -16,9 +16,6 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Finder\Finder;
-use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
-use Symfony\Component\HttpFoundation\File\File;
 
 /**
  * LicenserCommand
@@ -37,7 +34,7 @@ class LicenserCommand extends Command
             ->setDescription('Runs the licenser against the given source path')
             ->addArgument(
                 'source',
-                InputArgument::REQUIRED,
+                InputArgument::OPTIONAL,
                 'The path to the source files that the licenser will process'
             )
             ->addArgument(
@@ -45,6 +42,12 @@ class LicenserCommand extends Command
                 InputArgument::OPTIONAL,
                 'The name of a built in license or a path to the file containing your custom license header doc block as it will appear when prepended to your source files',
                 'default'
+            )
+            ->addOption(
+                'config',
+                'c',
+                InputOption::VALUE_OPTIONAL,
+                '.yml file with configuration'
             )
             ->addOption(
                 'param',
@@ -76,60 +79,20 @@ class LicenserCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $source = $input->getArgument('source');
-        $license = $input->getArgument('license');
         $dryRun = $input->getOption('dry-run');
         $checkOnly = $input->getOption('check-only');
-
-        if (file_exists($source)) {
-            $finder = Finder::create();
-            if (is_dir($source)) {
-                $finder->name('*.php')->in(realpath($source));
-            } else {
-                $file = new File($source);
-                $finder
-                    ->name($file->getFilename())
-                    ->depth(0)
-                    ->in($file->getPath());
-            }
-        } else {
-            throw new FileNotFoundException($source);
-        }
-
-        $params = [];
-        if ($input->getOption('param')) {
-            foreach ($input->getOption('param') as $param) {
-                if (strpos($param, ':') !== false) {
-                    list($name, $value) = explode(':', $param, 2);
-                    $params[$name] = $value;
-                } else {
-                    $msg = sprintf('Invalid parameter "%s", should have the format "name:value", e.g. -p year:%s -p owner:"My Name <email@example.com>"', $param, date('Y'));
-                    throw new \InvalidArgumentException($msg);
-                }
-            }
-        }
-
-        $originLicense = $license;
-        if (!file_exists($license)) {
-            $license = implode(DIRECTORY_SEPARATOR, [__DIR__, '..', 'licenses', $license]);
-        }
-
-        if (!file_exists($license)) {
-            throw new \InvalidArgumentException(sprintf('Invalid license file "%s"', $originLicense));
-        }
-
-        $rawLicense = file_get_contents($license);
-
-        $config = Config::create()
-            ->setParameters($params)
-            ->setLicense($rawLicense)
-            ->setFinder($finder);
 
         $mode = Licenser::MODE_NORMAL;
         if ($checkOnly) {
             $mode = Licenser::MODE_CHECK_ONLY;
         } elseif ($dryRun) {
             $mode = Licenser::MODE_DRY_RUN;
+        }
+
+        if ($input->getOption('config')) {
+            $config = Config::createFromYml($input->getOption('config'));
+        } else {
+            $config = Config::createFromInput($input);
         }
 
         $this->buildLicenser($config, $output)->process($mode);
