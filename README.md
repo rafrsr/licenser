@@ -15,11 +15,43 @@ Automates the prepending of a license header doc block to your directory(ies) of
 - Can check your source files for the correct license information
 - Support global install with `.yml` Configuration per project
 
-### Install
+## Install
+
+You can grab a copy of rafrsr/licenser in either of the following ways.
+
+### As a phar
+
+You can simply download a pre-compiled and ready-to-use version as a Phar to any directory. 
+Simply download the latest `licenser.phar.zip` file from our releases page:
+
+[Latest release](https://github.com/rafrsr/licenser/releases/latest)
+
+Uncompress the phar fom zip package and now verify everything works by running this:
+
+````
+php licenser.phar --version
+````
+
+Now can copy this tool when you need to use in any project
+
+#### Updating phar
+
+There's no separate update procedure, simply download the latest release again and overwrite the existing phar.
+
+### Installation using Composer
+
+Alternatively, you can also install Licenser as part of your development dependencies. 
+You will likely want to use the require-dev section to exclude rafrsr/licenser in your production environment.
 
 1. [Install composer](https://getcomposer.org/download/)
 2. Execute: `require rafrsr/licenser --dev`
-3. Run `./bin/licenser /path/to/source/files /path/to/license/file` to process source files
+3. Run `./vendor/bin/licenser --version`
+
+#### Updating dependency
+
+Just run `composer update rafrsr/licenser` to update to the latest release.
+
+## Usage
 
 ### Using a built-in license type
 
@@ -130,10 +162,16 @@ parameters:
    version: '@Rafrsr\Licenser\Licenser::VERSION'
 ````
 
-#### Usage
+and execute
+
 ````bash
 ./bin/licenser --config=.licenser.yml
 ````
+or
+````bash
+./bin/licenser MyClass.php --config=.licenser.yml
+````
+In the second example the `finder` is overwritten and apply the given config to given file or directory.
 
 ### YML Settings
 
@@ -145,6 +183,7 @@ parameters:
 - **parameters:** _[array]_ array of parameters to pass to template  
 
 > NOTE: can reference to a constant in parameters using `@` before the name of the constant, e.g: `@Rafrsr\Licenser\Licenser::VERSION`
+
 
 ### Caution
 
