@@ -3,6 +3,7 @@
   "description": "Adds license headers to your source files",
   "license": "MIT",
   "type": "library",
+  "homepage": "http://rafrsr.github.io/licenser/",
   "authors": [
     {
       "name": "Rafael SR",
