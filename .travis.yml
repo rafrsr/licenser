@@ -1,11 +1,12 @@
 language: php
 
-php:
-  - 5.6
-  - 7.0
-  - hhvm
-
 matrix:
+    fast_finish: true
+    include:
+        - php: 5.6
+          env: DEPLOY=yes
+        - php: 7.0
+        - php: hhvm
     allow_failures:
         - php: hhvm
 
@@ -20,3 +21,19 @@ script:
 
 after_script:
   - php vendor/bin/coveralls
+
+before_deploy:
+    - curl -LSs http://box-project.github.io/box2/installer.php | php
+    - composer update --no-dev --no-interaction --optimize-autoloader --prefer-stable
+    - php -d phar.readonly=false box.phar build
+
+deploy:
+    provider: releases
+    api_key:
+      secure: EJyBd15ue7wpISZHvCDXQloXMJmCSKZWyPQ/Y2eyhRC/88WMYGbIBkfOAWg5HSit32PkNMNzUEjvHlW4TAUPArbUtk+s5zCZb/CDHQt4mEF1+GP7jd5B5FTHdYiDeCmAczux8Q6ub+SA9dCGPGZ86nZMsTC0d1CWuFV+eUH4LtGU34FEHhYVwpEZogaPXjf55z+mTwGS5wnNv5E5ee1tfdCE8DmvhDxT9h5VWZaFp0HwmjpdCBwVi5P6C6GU7lgZWkUo4BU7kmO/bQfd20WoaVR5WSkkAf20F2WFCqWGwp7XmEB2VTDNP7S4B62FGLZPw6oACWO9TUTrZPSoREA96KSdw74E1D+0bNT39AYsLZOL5Nbuwe+LvGn6Ej8R0l/G0pMLsu89tg1fJflmSpWk1q4VH0CzvXQ2RsbS06vOZNi8//6fJbLOFB8ZunLS6ApK/XEI3e5U+oWW5QFWr06Xhu8tm36VZ00PeZRgTQXXfRY6cQ9SL9s3MXvLNVWKKAOVWvprAIgsvQKUeY0AcXm4hGqZTB4sd/4nuDv/c9G+z9S+yOMfaxuKLyfegY22jo/IUmWoEuKUySLJdcIsHZdCbKV42fWwuBIgv1hJhbxQozHAvGH7oMD39AHk6+LzLViGGe4vwDWqZb4OdYISqJkKL5s4fZIOXqa6XvvX5dlX7fs=
+    file: licenser.phar
+    skip_cleanup: true
+    on:
+      repo: rafrsr/licenser
+      tags: true
+      condition: $DEPLOY = yes
