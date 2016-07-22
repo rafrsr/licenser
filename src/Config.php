@@ -3,9 +3,9 @@
 /*
  * LICENSE: This file is subject to the terms and conditions defined in
  * file 'LICENSE', which is part of this source code package.
- * 
+ *
  * @copyright 2016 Copyright(c) - All rights reserved.
- * 
+ *
  * @author Rafael SR <https://github.com/rafrsr>
  * @package Licenser
  * @version 1.0.0-alpha
@@ -135,20 +135,22 @@ class Config
             } elseif (file_exists(self::resolveBuildInLicense($license))) {
                 $license = file_get_contents(self::resolveBuildInLicense($license));
             } else {
-                throw new FileNotFoundException($license);
+                throw new \InvalidArgumentException(sprintf('Invalid license file "%s"', $license));
             }
         }
 
         $config->setLicense($license);
 
-        foreach ($arrayConfig['parameters'] as &$parameter) {
-            //try to resolve constants
-            if (strpos($parameter, '@') === 0 && defined(substr($parameter, 1))) {
-                $parameter = constant(substr($parameter, 1));
+        if (isset($arrayConfig['parameters'])) {
+            foreach ($arrayConfig['parameters'] as &$parameter) {
+                //try to resolve constants
+                if (strpos($parameter, '@') === 0 && defined(substr($parameter, 1))) {
+                    $parameter = constant(substr($parameter, 1));
+                }
             }
-        }
 
-        $config->setParameters(isset($arrayConfig['parameters']) ? $arrayConfig['parameters'] : []);
+            $config->setParameters(isset($arrayConfig['parameters']) ? $arrayConfig['parameters'] : []);
+        }
 
         $finder = new Finder();
         if (isset($arrayConfig['finder']['in'])) {
@@ -156,7 +158,7 @@ class Config
                 $finder->in($workingDir.DIRECTORY_SEPARATOR.$in);
             }
         } else {
-            $finder->in($workingDir);
+            throw new \LogicException('Invalid configuration, value of "finder.in" is required to locate source files.');
         }
 
         if (isset($arrayConfig['finder']['name'])) {

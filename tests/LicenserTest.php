@@ -37,7 +37,7 @@ EOS;
         self::assertNotContains(' * Old license File', file_get_contents($this->tempDir.DIRECTORY_SEPARATOR.'file2.php'));
         self::assertContains($expected, file_get_contents($this->tempDir.DIRECTORY_SEPARATOR.'file3.php'));
         self::assertNotContains($expected, file_get_contents($this->tempDir.DIRECTORY_SEPARATOR.'license'));
-        self::assertContains('3 file(s) has been processed in', $this->output->fetch());
+        self::assertContains('4 file(s) has been processed in', $this->output->fetch());
     }
 
     public function testLicenserCheckIntegrity()
@@ -51,7 +51,7 @@ EOS;
         self::assertFileEquals($expected.'file.php', $this->tempDir.DIRECTORY_SEPARATOR.'file.php');
         self::assertFileEquals($expected.'file2.php', $this->tempDir.DIRECTORY_SEPARATOR.'file2.php');
         self::assertFileEquals($expected.'file3.php', $this->tempDir.DIRECTORY_SEPARATOR.'file3.php');
-        self::assertContains('3 file(s) has been processed in', $this->output->fetch());
+        self::assertContains('4 file(s) has been processed in', $this->output->fetch());
     }
 
     public function testLicenserWithParameters()
@@ -73,7 +73,7 @@ EOS;
         self::assertContains($expected, file_get_contents($this->tempDir.DIRECTORY_SEPARATOR.'file2.php'));
         self::assertContains($expected, file_get_contents($this->tempDir.DIRECTORY_SEPARATOR.'file3.php'));
         self::assertNotContains($expected, file_get_contents($this->tempDir.DIRECTORY_SEPARATOR.'license'));
-        self::assertContains('3 file(s) has been processed in', $this->output->fetch());
+        self::assertContains('4 file(s) has been processed in', $this->output->fetch());
     }
 
     public function testLicenserDryRun()
@@ -91,7 +91,7 @@ EOS;
         self::assertNotContains($expected, file_get_contents($this->tempDir.DIRECTORY_SEPARATOR.'file2.php'));
         self::assertNotContains($expected, file_get_contents($this->tempDir.DIRECTORY_SEPARATOR.'file3.php'));
         self::assertNotContains($expected, file_get_contents($this->tempDir.DIRECTORY_SEPARATOR.'file3.php'));
-        self::assertContains('3 file(s) has been processed in', $this->output->fetch());
+        self::assertContains('4 file(s) has been processed in', $this->output->fetch());
     }
 
     public function testLicenserCheckOnly()
@@ -111,7 +111,7 @@ EOS;
         self::assertNotContains($expected, file_get_contents($this->tempDir.DIRECTORY_SEPARATOR.'file3.php'));
         $output = $this->output->fetch();
         self::assertContains('[ERROR] 3 file(s) should be updated.', $output);
-        self::assertContains('3 file(s) has been processed in', $output);
+        self::assertContains('4 file(s) has been processed in', $output);
 
         $this->testBasicLicenser();
 
@@ -122,7 +122,7 @@ EOS;
         self::assertContains($expected, file_get_contents($this->tempDir.DIRECTORY_SEPARATOR.'file3.php'));
         $output = $this->output->fetch();
         self::assertContains('[OK] All files contains a valid license header. ', $output);
-        self::assertContains('3 file(s) has been processed in', $output);
+        self::assertContains('4 file(s) has been processed in', $output);
 
     }
 

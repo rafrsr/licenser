@@ -45,6 +45,7 @@ trait LicenseTesterSetUpTrait
         $fileSystem->mkdir($this->tempDir);
         $this->fixturesDir = __DIR__.DIRECTORY_SEPARATOR.'Fixtures';
         $fileSystem->mirror($this->fixturesDir.DIRECTORY_SEPARATOR.'origin', $this->tempDir, null, ['override' => true]);
+        $fileSystem->copy($this->fixturesDir.DIRECTORY_SEPARATOR.'license', $this->tempDir.DIRECTORY_SEPARATOR.'license', true);
 
         $finder = Finder::create()->in($this->tempDir)->name('*.php');
         $this->config = (Config::create()->setFinder($finder));
