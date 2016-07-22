@@ -1,0 +1,8 @@
+This file is part of the {% if package is defined and package %}{{ package }}{% else %}"PACKAGE NAME"{% endif %} package.
+
+{% if author is defined and author %}
+(c) {{ author|raw }}
+
+{% endif %}
+For the full copyright and license information, please view the LICENSE
+file that was distributed with this source code.

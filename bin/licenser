@@ -1,0 +1,21 @@
+#!/usr/bin/env php
+<?php
+
+$autoloaders = array(
+    __DIR__ . '/../vendor/autoload.php',
+    __DIR__ . '/../../../autoload.php'
+);
+
+foreach ($autoloaders as $loader) {
+    if (file_exists($loader)) {
+        require $loader;
+        break;
+    }
+}
+
+use Rafrsr\Licenser\Command\LicenserCommand;
+use Rafrsr\Licenser\Command\LicenserApplication;
+
+$application = new LicenserApplication();
+$application->add(new LicenserCommand());
+$application->run();
