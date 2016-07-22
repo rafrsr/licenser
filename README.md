@@ -85,6 +85,7 @@ Placeholder can vary according to license:
 | apache2.0  | author  | 
 | symfony  | author, package  |
 
+##### e.g.
 ````bash
 ./bin/licenser /path/to/files -p author:"Author Name <email@example.com>" -p version:1.0
 ./bin/licenser /path/to/files mit -p author:"Author Name <email@example.com>"
