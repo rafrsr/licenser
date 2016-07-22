@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title>Licenser by rafrsr</title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1>Licenser</h1>
+        <h2>Adds license headers to your source files</h2>
+        <a href="https://github.com/rafrsr/licenser" class="button"><small>View project on</small> GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          <h1>
+<a id="licenser" class="anchor" href="#licenser" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Licenser</h1>
+
+<p>Automates the prepending of a license header doc block to your directory(ies) of source files.</p>
+
+<ul>
+<li>Accept a directory of source files or a path to a single source file to process</li>
+<li>Accept a file path containing your custom license doc block</li>
+<li>Can check your source files for the correct license information</li>
+</ul>
+
+<h3>
+<a id="install" class="anchor" href="#install" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Install</h3>
+
+<ol>
+<li><a href="https://getcomposer.org/download/">Install composer</a></li>
+<li>Execute: <code>require rafrsr/licenser --dev</code>
+</li>
+<li>Run <code>./bin/licenser /path/to/source/files /path/to/license/file</code> to process source files</li>
+</ol>
+
+<h3>
+<a id="using-a-built-in-license-type" class="anchor" href="#using-a-built-in-license-type" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Using a built-in license type</h3>
+
+<p>Licenser supports the following built-in licenses and headers:</p>
+
+<ul>
+<li>The Apache 2.0 license (referred to as <code>apache2.0</code> in Licenser)</li>
+<li>The MIT license (referred to as <code>mit</code> in Licenser)</li>
+<li>Default - Is not a license, is a common header to add to any project (referred to as <code>default</code> in Licenser)</li>
+<li>Package - Similar to default but allow a package name (referred to as <code>package</code> in Licenser)</li>
+</ul>
+
+<p>To use one of these built-in licenses you just replace the path to your custom licenses file with the name of the built-in license instead. 
+For example if you wanted to use the MIT license then you would run something like:</p>
+
+<div class="highlight highlight-source-shell"><pre>./bin/licenser run /path/to/files mit</pre></div>
+
+<p>The <code>default</code> header is used when run something like this:</p>
+
+<div class="highlight highlight-source-shell"><pre>./bin/licenser run /path/to/files</pre></div>
+
+<h3>
+<a id="value-replacement-in-built-in-licenses" class="anchor" href="#value-replacement-in-built-in-licenses" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Value replacement in built-in licenses</h3>
+
+<p>When using a built-in license the Licenser will replace special placeholders with custom values. 
+Placeholder can vary according to license:</p>
+
+<table>
+<thead>
+<tr>
+<th>license</th>
+<th>placeholders</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>default</td>
+<td>author, package, version</td>
+</tr>
+<tr>
+<td>mit</td>
+<td>author</td>
+</tr>
+<tr>
+<td>apache2.0</td>
+<td>author</td>
+</tr>
+<tr>
+<td>symfony</td>
+<td>author, package</td>
+</tr>
+</tbody>
+</table>
+
+<div class="highlight highlight-source-shell"><pre>./bin/licenser /path/to/files -p author:<span class="pl-s"><span class="pl-pds">"</span>Author Name &lt;email@example.com&gt;<span class="pl-pds">"</span></span> -p version:1.0
+./bin/licenser /path/to/files mit -p author:<span class="pl-s"><span class="pl-pds">"</span>Author Name &lt;email@example.com&gt;<span class="pl-pds">"</span></span>
+./bin/licenser /path/to/files apache2.0 -p author:<span class="pl-s"><span class="pl-pds">"</span>Author Name &lt;email@example.com&gt;<span class="pl-pds">"</span></span>
+./bin/licenser /path/to/files symfony -p author:<span class="pl-s"><span class="pl-pds">"</span>Author Name &lt;email@example.com&gt;<span class="pl-pds">"</span></span> -p package:MyPHPPackage</pre></div>
+
+<h3>
+<a id="creating-your-custom-license-template" class="anchor" href="#creating-your-custom-license-template" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Creating your custom license template</h3>
+
+<p>License template can be created using a simple text file. 
+License templates are processed using <a href="http://twig.sensiolabs.org/">Twig</a>, then can use any twig feature.</p>
+
+<h5>
+<a id="eg" class="anchor" href="#eg" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>e.g.</h5>
+
+<pre><code>This file is part of the {{ package }}.
+
+(c) {{ 'now'|date('Y') }}
+
+@version {{ version }}
+
+For the full copyright and license information, please view the LICENSE
+file that was distributed with this source code.
+</code></pre>
+
+<p>To process this license:</p>
+
+<div class="highlight highlight-source-shell"><pre>./bin/licenser /path/to/files /path/to/license -p package:MyPHPPackage -p version:1.0</pre></div>
+
+<blockquote>
+<p>NOTE: parameters passed in the commandline can be used in the license template</p>
+</blockquote>
+
+<h3>
+<a id="checking-files-for-correct-license" class="anchor" href="#checking-files-for-correct-license" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Checking files for correct license</h3>
+
+<p>Licenser also allows you to check your source files for correct license information.
+It will warn you if there are any source files that do not have a license header that matches the options you provide.</p>
+
+<div class="highlight highlight-source-shell"><pre>./bin/licenser /path/to/files mit --only-check</pre></div>
+
+<p>By default the check only return if all files are ok or not, bu can use verbosity levels to view more details.</p>
+
+<div class="highlight highlight-source-shell"><pre>./bin/licenser /path/to/files mit --only-check -vv</pre></div>
+
+<blockquote>
+<p>Verbosity levels are available in all actions</p>
+</blockquote>
+
+<h3>
+<a id="dry-run" class="anchor" href="#dry-run" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Dry-run</h3>
+
+<p>Licenser also allows you to verify all available changes using a <code>dry-run</code>. Is a mix between normal process and <code>only-check</code>, 
+verify all changes to see affected files before adding headers.</p>
+
+<div class="highlight highlight-source-shell"><pre>./bin/licenser /path/to/files mit --dry-run -vv</pre></div>
+
+<h3>
+<a id="yml-configuration-per-project" class="anchor" href="#yml-configuration-per-project" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>YML configuration per project</h3>
+
+<p>Licenser support create a <code>.yml</code> file for each project with custom settings. 
+Is helpful to use a global installation of Licenser and same commandline for all projects.</p>
+
+<p>Create a yml file under your project directory</p>
+
+<h4>
+<a id="eg-1" class="anchor" href="#eg-1" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>e.g:</h4>
+
+<div class="highlight highlight-source-yaml"><pre><span class="pl-c">#.licenser.yml</span>
+<span class="pl-s"><span class="pl-ent">finder:</span></span>
+  <span class="pl-s"><span class="pl-ent">in:</span> </span>
+    <span class="pl-s">- <span class="pl-s">src</span></span>
+    <span class="pl-s">- <span class="pl-s">tests</span></span>
+<span class="pl-s"><span class="pl-ent">license:</span> <span class="pl-s">default</span></span>
+<span class="pl-s"><span class="pl-ent">parameters:</span></span>
+   <span class="pl-s"><span class="pl-ent">author:</span> <span class="pl-s">Rafael SR &lt;https://github.com/rafrsr&gt;</span></span>
+   <span class="pl-s"><span class="pl-ent">package:</span> <span class="pl-s">Licenser</span></span>
+   <span class="pl-s"><span class="pl-ent">version:</span> <span class="pl-s"><span class="pl-pds">'</span>@Rafrsr<span class="pl-cce">\L</span>icenser<span class="pl-cce">\L</span>icenser::VERSION<span class="pl-pds">'</span></span></span></pre></div>
+
+<h4>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage</h4>
+
+<div class="highlight highlight-source-shell"><pre>./bin/licenser --config=.licenser.yml</pre></div>
+
+<h3>
+<a id="yml-settings" class="anchor" href="#yml-settings" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>YML Settings</h3>
+
+<ul>
+<li>
+<strong>finder:</strong> used to create instance of Finder to locate source files
+
+<ul>
+<li>
+<strong>in:</strong> <em>[array, string]</em> relative dir to find files</li>
+<li>
+<strong>name:</strong> <em>[array, string]</em> name of files to process (default: *.php)</li>
+</ul>
+</li>
+<li>
+<strong>license:</strong>  <em>[string]</em> name of build-in license to use or relative filename<br>
+</li>
+<li>
+<strong>license_content:</strong>  <em>[string]</em> alternative to create your license inline without reference to any file</li>
+<li>
+<strong>parameters:</strong> <em>[array]</em> array of parameters to pass to template<br>
+</li>
+</ul>
+
+<blockquote>
+<p>NOTE: can reference to a constant in parameters using <code>@</code> before the name of the constant, e.g: <code>@Rafrsr\Licenser\Licenser::VERSION</code></p>
+</blockquote>
+
+<h3>
+<a id="caution" class="anchor" href="#caution" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Caution</h3>
+
+<p>It is recommended that you have your source files under version control when running 
+the tool as it is still experimental.</p>
+
+<h2>
+<a id="copyright" class="anchor" href="#copyright" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Copyright</h2>
+
+<p>This project is licensed under the <a href="LICENSE">MIT license</a>.</p>
+        </section>
+
+        <aside id="sidebar">
+          <a href="https://github.com/rafrsr/licenser/zipball/master" class="button">
+            <small>Download</small>
+            .zip file
+          </a>
+          <a href="https://github.com/rafrsr/licenser/tarball/master" class="button">
+            <small>Download</small>
+            .tar.gz file
+          </a>
+
+          <p class="repo-owner"><a href="https://github.com/rafrsr/licenser"></a> is maintained by <a href="https://github.com/rafrsr">rafrsr</a>.</p>
+
+          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
+        </aside>
+      </div>
+    </div>
+
+  
+  </body>
+</html>
