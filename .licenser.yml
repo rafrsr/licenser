@@ -1,0 +1,7 @@
+finder:
+  in:
+    - src
+parameters:
+   author: Rafael SR <https://github.com/rafrsr>
+   package: Licenser
+   version: '@Rafrsr\Licenser\Licenser::VERSION'
