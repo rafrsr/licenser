@@ -151,21 +151,36 @@ class Config
             $config->setParameters(isset($arrayConfig['parameters']) ? $arrayConfig['parameters'] : []);
         }
 
-        $finder = new Finder();
         if (isset($arrayConfig['finder']['in'])) {
+            $inArray = [];
             foreach ((array) $arrayConfig['finder']['in'] as $in) {
-                $finder->in($workingDir.DIRECTORY_SEPARATOR.$in);
+                $inArray[] = $workingDir.DIRECTORY_SEPARATOR.$in;
             }
+            $arrayConfig['finder']['in'] = $inArray;
         } else {
             throw new \LogicException('Invalid configuration, value of "finder.in" is required to locate source files.');
         }
 
-        if (isset($arrayConfig['finder']['name'])) {
-            foreach ((array) $arrayConfig['finder']['name'] as $name) {
-                $finder->name($name);
+        if (!isset($arrayConfig['finder']['name'])) {
+            $arrayConfig['finder']['name'] = '*.php';
+        }
+
+        $finder = new Finder();
+        foreach ($arrayConfig['finder'] as $method => $arguments) {
+            if (false === method_exists($finder, $method)) {
+                throw new \InvalidArgumentException(
+                    sprintf(
+                        'The method "Finder::%s" does not exist.',
+                        $method
+                    )
+                );
             }
-        } else {
-            $finder->name('*.php');
+
+            $arguments = (array) $arguments;
+
+            foreach ($arguments as $argument) {
+                $finder->$method($argument);
+            }
         }
         $config->setFinder($finder);
 

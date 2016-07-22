@@ -5,6 +5,10 @@
  * file 'LICENSE', which is part of this source code package.
  *
  * @copyright 2016 Copyright(c) - All rights reserved.
+ *
+ * @author Rafael SR <https://github.com/rafrsr>
+ * @package Licenser
+ * @version 1.0.1
  */
 
 namespace Rafrsr\Licenser\Tests;

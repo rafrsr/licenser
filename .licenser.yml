@@ -1,6 +1,9 @@
 finder:
   in:
     - src
+    - tests
+  notPath:
+    - 'Fixtures'
 parameters:
    author: Rafael SR <https://github.com/rafrsr>
    package: Licenser
