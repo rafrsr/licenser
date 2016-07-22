@@ -28,7 +28,7 @@ class LicenserTest extends \PHPUnit_Framework_TestCase
 /*
  * LICENSE: This file is subject to the terms and conditions defined in
  * file 'LICENSE', which is part of this source code package.
- * 
+ *
  * @copyright 2016 Copyright(c) - All rights reserved.
  */
 EOS;
@@ -63,9 +63,9 @@ EOS;
 /*
  * LICENSE: This file is subject to the terms and conditions defined in
  * file 'LICENSE', which is part of this source code package.
- * 
+ *
  * @copyright 2016 Copyright(c) - All rights reserved.
- * 
+ *
  * @author Rafael SR <https://github.com/rafrsr>
  */
 EOS;
@@ -84,7 +84,7 @@ EOS;
 /*
  * LICENSE: This file is subject to the terms and conditions defined in
  * file 'LICENSE', which is part of this source code package.
- * 
+ *
  * @copyright 2016 Copyright(c) - All rights reserved.
  */
 EOS;
@@ -102,7 +102,7 @@ EOS;
 /*
  * LICENSE: This file is subject to the terms and conditions defined in
  * file 'LICENSE', which is part of this source code package.
- * 
+ *
  * @copyright 2016 Copyright(c) - All rights reserved.
  */
 EOS;
