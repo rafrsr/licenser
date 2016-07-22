@@ -117,6 +117,7 @@ class LicenserCommand extends Command
                         $path = str_replace($in, null, $source);
                         //remove any \ or / in the path start
                         $path = preg_replace('/^[\/\\\]/', null, $path);
+                        $path = str_replace('\\', '/', $path); //convert \ -> /
                         if (is_file($source)) {
                             $path = pathinfo($path)['dirname'];
                         }
