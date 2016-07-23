@@ -8,7 +8,7 @@
  *
  * @author Rafael SR <https://github.com/rafrsr>
  * @package Licenser
- * @version 1.0.2
+ * @version 1.0.3
  */
 
 namespace Rafrsr\Licenser;
@@ -25,7 +25,7 @@ use Symfony\Component\Stopwatch\Stopwatch;
  */
 class Licenser
 {
-    const VERSION = '1.0.2';
+    const VERSION = '1.0.3';
 
     const MODE_NORMAL = 1;
     const MODE_DRY_RUN = 2;
