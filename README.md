@@ -8,6 +8,8 @@
 [![Total Downloads](https://poser.pugx.org/rafrsr/licenser/downloads)](https://packagist.org/packages/rafrsr/licenser)
 [![License](https://poser.pugx.org/rafrsr/licenser/license)](https://packagist.org/packages/rafrsr/licenser)
 
+[![SensioLabsInsight](https://insight.sensiolabs.com/projects/e3f71e27-3f00-4c71-89ea-323f7652a74e/big.png)](https://insight.sensiolabs.com/projects/e3f71e27-3f00-4c71-89ea-323f7652a74e)
+
 Automates the prepending of a license header doc block to your directory(ies) of source files.
 
 - Accept a directory of source files or a path to a single source file to process
