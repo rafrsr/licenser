@@ -11,7 +11,7 @@
  * @version 1.0.2
  */
 
-namespace Rafrsr\Licenser\Tests\Command;
+namespace Rafrsr\Licenser\tests\Command;
 
 use Rafrsr\Licenser\Command\LicenserApplication;
 use Rafrsr\Licenser\Licenser;

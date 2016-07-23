@@ -7,3 +7,5 @@ bin/licenser.phar
 # project based files
 .idea/
 .project
+
+.php_cs.cache

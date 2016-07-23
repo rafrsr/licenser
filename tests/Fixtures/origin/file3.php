@@ -1,9 +1,8 @@
 <?php
 
 /**
- * Old license
+ * Old license.
  */
 class SomeExampleClass
 {
-
 }

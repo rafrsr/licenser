@@ -11,14 +11,14 @@
  * @version 1.0.2
  */
 
-namespace Rafrsr\Licenser\Tests;
+namespace Rafrsr\Licenser\tests;
 
 use Rafrsr\Licenser\Config;
 use Rafrsr\Licenser\Licenser;
 use Symfony\Component\Console\Tests\Fixtures\DummyOutput;
 
 /**
- * Class LicenserTest
+ * Class LicenserTest.
  */
 class LicenserTest extends \PHPUnit_Framework_TestCase
 {
@@ -127,7 +127,6 @@ EOS;
         $output = $this->output->fetch();
         self::assertContains('[OK] All files contains a valid license header. ', $output);
         self::assertContains('4 file(s) has been processed in', $output);
-
     }
 
     public function testSetGetConfig()

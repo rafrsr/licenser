@@ -11,15 +11,15 @@
  * @version 1.0.2
  */
 
-namespace Rafrsr\Licenser\Tests;
+namespace Rafrsr\Licenser\tests;
 
 use Rafrsr\Licenser\Command\LicenserCommand;
 use Rafrsr\Licenser\Config;
 use Rafrsr\Licenser\Licenser;
 use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Filesystem\Exception\FileNotFoundException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
-use Symfony\Component\Filesystem\Exception\FileNotFoundException;
 use Symfony\Component\Yaml\Yaml;
 
 class ConfigTest extends \PHPUnit_Framework_TestCase
@@ -169,8 +169,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 
         $yml = $this->buildYml(
             [
-                'finder' =>
-                    [
+                'finder' => [
                         'in' => 'licenser',
                     ],
             ]
@@ -187,8 +186,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 
         $yml = $this->buildYml(
             [
-                'finder' =>
-                    [
+                'finder' => [
                         'in' => 'licenser',
                     ],
                 'license' => 'licenser/license',
@@ -212,8 +210,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 
         $yml = $this->buildYml(
             [
-                'finder' =>
-                    [
+                'finder' => [
                         'in' => 'licenser',
                     ],
                 'parameters' => [
@@ -235,8 +232,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 
         $yml = $this->buildYml(
             [
-                'finder' =>
-                    [
+                'finder' => [
                         'in' => 'licenser',
                     ],
                 'license_content' => $license,
@@ -248,11 +244,9 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 
     public function testCreateFromYmlWithInvalidLicense()
     {
-
         $yml = $this->buildYml(
             [
-                'finder' =>
-                    [
+                'finder' => [
                         'in' => 'licenser',
                     ],
                 'license' => 'my_license',
@@ -296,8 +290,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 
         $yml = $this->buildYml(
             [
-                'finder' =>
-                    [
+                'finder' => [
                         'in' => [
                             'licenser',
                             'other',
@@ -323,13 +316,11 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         self::assertEquals($config, Config::createFromYml($yml));
     }
 
-
     public function testCreateFromYmlCustomizeFinderInvalidMethod()
     {
         $yml = $this->buildYml(
             [
-                'finder' =>
-                    [
+                'finder' => [
                         'in' => [
                             'licenser',
                             'other',

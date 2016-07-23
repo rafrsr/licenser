@@ -18,10 +18,9 @@ use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Input\InputInterface;
 
 /**
- * LicenserApplication
+ * LicenserApplication.
  *
  * @author RafaelSR <https://github.com/rafrsr>
- *
  */
 class LicenserApplication extends Application
 {

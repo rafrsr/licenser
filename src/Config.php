@@ -19,7 +19,7 @@ use Symfony\Component\Finder\Finder;
 use Symfony\Component\Yaml\Yaml;
 
 /**
- * Config
+ * Config.
  *
  * @author RafaelSR <https://github.com/rafrsr>
  */
@@ -41,7 +41,7 @@ class Config
     protected $parameters = [];
 
     /**
-     * create
+     * create.
      *
      * @return Config
      */
@@ -51,7 +51,7 @@ class Config
     }
 
     /**
-     * Create config from console input
+     * Create config from console input.
      *
      * @param InputInterface $input
      *
@@ -101,7 +101,7 @@ class Config
 
         $rawLicense = file_get_contents($license);
 
-        $config = Config::create()
+        $config = self::create()
             ->setParameters($params)
             ->setLicense($rawLicense)
             ->setFinder($finder);
@@ -110,7 +110,7 @@ class Config
     }
 
     /**
-     * Create config from yml input
+     * Create config from yml input.
      *
      * @param string $ymlFile
      *
@@ -248,7 +248,7 @@ class Config
     }
 
     /**
-     * getParameter
+     * getParameter.
      *
      * @param string $key
      *
@@ -260,7 +260,7 @@ class Config
     }
 
     /**
-     * hasParameter
+     * hasParameter.
      *
      * @param string $key
      *
@@ -272,7 +272,7 @@ class Config
     }
 
     /**
-     * Resolve local license full path for passed build in license name
+     * Resolve local license full path for passed build in license name.
      *
      * @param string $license
      *
@@ -285,6 +285,6 @@ class Config
             return $license;
         }
 
-        return null;
+        return;
     }
 }

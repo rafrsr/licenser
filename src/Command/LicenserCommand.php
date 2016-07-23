@@ -23,7 +23,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
 
 /**
- * LicenserCommand
+ * LicenserCommand.
  *
  * @author RafaelSR <https://github.com/rafrsr>
  */
@@ -75,7 +75,7 @@ class LicenserCommand extends Command
     }
 
     /**
-     * Executes the command
+     * Executes the command.
      *
      * @param InputInterface  $input  An input stream
      * @param OutputInterface $output An output stream
@@ -142,7 +142,7 @@ class LicenserCommand extends Command
     }
 
     /**
-     * buildLicenser
+     * buildLicenser.
      *
      * @param Config          $config
      * @param OutputInterface $output

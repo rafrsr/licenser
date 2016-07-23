@@ -19,7 +19,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Stopwatch\Stopwatch;
 
 /**
- * Licenser
+ * Licenser.
  *
  * @author RafaelSR <https://github.com/rafrsr>
  */
@@ -37,7 +37,7 @@ class Licenser
     private $config;
 
     /**
-     * An output stream
+     * An output stream.
      *
      * @var OutputInterface
      */
@@ -56,7 +56,7 @@ class Licenser
     }
 
     /**
-     * create
+     * create.
      *
      * @param Config          $config
      * @param OutputInterface $output
@@ -109,7 +109,7 @@ class Licenser
     }
 
     /**
-     * Process current config
+     * Process current config.
      *
      * @param int $mode mode to run the process
      *
@@ -130,7 +130,7 @@ class Licenser
 
         foreach ($this->config->getFinder()->files() as $file) {
             $content = $file->getContents();
-            $total++;
+            ++$total;
 
             //must start with <?php
             if (preg_match('/^<\?php/', $content)) {
@@ -139,16 +139,16 @@ class Licenser
                 if (!preg_match('/^<\?php\s+\/\**(\s?\**[\S ]+\n*)((?m)^\s*\*[\S ]*\n)+/', $content, $matches)) {
                     $this->output->writeln(sprintf('<fg=green>[+] %s</>', $file->getRealPath()), OutputInterface::VERBOSITY_VERY_VERBOSE);
                     $licensedContent = preg_replace('/^<\?php\s+/', "<?php\n\n".$license."\n", $content);
-                    $additions++;
+                    ++$additions;
                 } elseif (array_key_exists(0, $matches)) {
                     $phpHeader = "<?php\n\n".$license;
                     if ($matches[0] !== $phpHeader) {
                         $this->output->writeln(sprintf('<fg=cyan>[u] %s</>', $file->getRealPath()), OutputInterface::VERBOSITY_VERY_VERBOSE);
                         $licensedContent = str_replace($matches[0], $phpHeader, $content);
-                        $updates++;
+                        ++$updates;
                     } else {
                         $this->output->writeln(sprintf('<fg=yellow>[=] %s</>', $file->getRealPath()), OutputInterface::VERBOSITY_VERY_VERBOSE);
-                        $untouched++;
+                        ++$untouched;
                     }
                 }
 
@@ -157,7 +157,7 @@ class Licenser
                 }
             } else {
                 $this->output->writeln(sprintf('<fg=red>[-] %s</>', $file->getRealPath()), OutputInterface::VERBOSITY_VERY_VERBOSE);
-                $ignored++;
+                ++$ignored;
             }
         }
         $event = $watch->stop('licenser');
@@ -206,13 +206,14 @@ class Licenser
     }
 
     /**
-     * Process given license returning comment format
+     * Process given license returning comment format.
      *
      * @param string $rawLicense raw license to process
      *
-     * @return string parsed license
      * @throws \Exception
      * @throws \Throwable
+     *
+     * @return string parsed license
      */
     private function parseLicense($rawLicense)
     {

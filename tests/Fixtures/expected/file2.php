@@ -9,9 +9,8 @@
 namespace WarehouseBundle\Admin;
 
 /**
- * Class Info
+ * Class Info.
  */
 class SomeExampleClass
 {
-
 }

@@ -11,7 +11,7 @@
  * @version 1.0.2
  */
 
-namespace Rafrsr\Licenser\Tests\Command;
+namespace Rafrsr\Licenser\tests\Command;
 
 use Rafrsr\Licenser\Command\LicenserApplication;
 use Rafrsr\Licenser\Command\LicenserCommand;
@@ -131,8 +131,7 @@ class LicenserCommandTest extends \PHPUnit_Framework_TestCase
         $yamlFile = tempnam(sys_get_temp_dir(), 'licenser');
         $yaml = Yaml::dump(
             [
-                'finder' =>
-                    [
+                'finder' => [
                         'in' => 'licenser',
                     ],
             ]

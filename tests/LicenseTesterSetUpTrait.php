@@ -11,7 +11,7 @@
  * @version 1.0.2
  */
 
-namespace Rafrsr\Licenser\Tests;
+namespace Rafrsr\Licenser\tests;
 
 use Rafrsr\Licenser\Config;
 use Symfony\Component\Console\Tests\Fixtures\DummyOutput;

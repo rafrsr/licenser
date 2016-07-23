@@ -7,5 +7,4 @@
  */
 class SomeExampleClass
 {
-
 }
