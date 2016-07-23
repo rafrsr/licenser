@@ -103,7 +103,6 @@ class LicenserCommand extends Command
                 && file_exists($source)
                 && realpath($source) !== realpath($configFile)//ignore run the command in the config file
             ) {
-                //TODO: find a best way to do this without reflection
                 $source = realpath($source);
                 $finderReflection = new \ReflectionClass(Finder::class);
                 $dirsProperty = $finderReflection->getProperty('dirs');
