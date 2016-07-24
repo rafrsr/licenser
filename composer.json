@@ -1,6 +1,6 @@
 {
   "name": "rafrsr/licenser",
-  "description": "Adds license headers to your source files",
+  "description": "Automates the prepending of a license header doc block to your source files.",
   "license": "MIT",
   "type": "library",
   "homepage": "http://rafrsr.github.io/licenser/",
