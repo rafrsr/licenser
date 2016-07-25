@@ -233,7 +233,7 @@ finders:
       - bootstrap
 ````
 
-The above example find for default`*.php` files in *src** folder, 
+The above example find for default`*.php` files in *src* folder, 
 and `*.js` files in *web/js* folder ignoring *jquery* and *bootstrap* folders in this location
 
 ### Caution
