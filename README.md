@@ -196,6 +196,21 @@ In the second example the `finder` is overwritten and apply the given config to 
 
 > NOTE: can reference to a constant in parameters using `@` before the name of the constant, e.g: `@Rafrsr\Licenser\Licenser::VERSION`
 
+### Usage in others files types like javascript source files
+
+By default licenser only find for files named `*.php` can change this behavior in the finder configuration.
+
+#### e.g:
+````yml
+#.licenser.yml
+finder:
+  in: 
+    - src
+  name:
+    - *.php
+    - *.js
+````
+
 ### Caution
 
 It is recommended that you have your source files under version control when running 

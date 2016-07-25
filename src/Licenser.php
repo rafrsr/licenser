@@ -123,7 +123,6 @@ class Licenser
         $additions = 0;
         $updates = 0;
         $untouched = 0;
-        $ignored = 0;
 
         $watch = new Stopwatch();
         $watch->start('licenser');
@@ -133,31 +132,26 @@ class Licenser
             ++$total;
 
             //must start with <?php
-            if (preg_match('/^<\?php/', $content)) {
-                $licensedContent = null;
-                //match license in the file header
-                if (!preg_match('/^<\?php\s+\/\**(\s?\**[\S ]+\n*)((?m)^\s*\*[\S ]*\n)+/', $content, $matches)) {
-                    $this->output->writeln(sprintf('<fg=green>[+] %s</>', $file->getRealPath()), OutputInterface::VERBOSITY_VERY_VERBOSE);
-                    $licensedContent = preg_replace('/^<\?php\s+/', "<?php\n\n".$license."\n", $content);
-                    ++$additions;
-                } elseif (array_key_exists(0, $matches)) {
-                    $phpHeader = "<?php\n\n".$license;
-                    if ($matches[0] !== $phpHeader) {
-                        $this->output->writeln(sprintf('<fg=cyan>[u] %s</>', $file->getRealPath()), OutputInterface::VERBOSITY_VERY_VERBOSE);
-                        $licensedContent = str_replace($matches[0], $phpHeader, $content);
-                        ++$updates;
-                    } else {
-                        $this->output->writeln(sprintf('<fg=yellow>[=] %s</>', $file->getRealPath()), OutputInterface::VERBOSITY_VERY_VERBOSE);
-                        ++$untouched;
-                    }
-                }
-
-                if ($licensedContent !== null && $mode === self::MODE_NORMAL) {
-                    file_put_contents($file->getPathname(), $licensedContent);
+            $licensedContent = null;
+            //match license in the file header
+            if (preg_match('/^(?\'opentag\'(\S{1,5})?\n+)?(?\'license\'\/\**(\s?\**[\S ]+\n*)((?m)^\s*\*[\S ]*\n)+)/', $content, $matches)) {
+                $phpHeader = $matches['opentag'].$license;
+                if ($matches[0] !== $phpHeader) {
+                    $this->output->writeln(sprintf('<fg=cyan>[u] %s</>', $file->getRealPath()), OutputInterface::VERBOSITY_VERY_VERBOSE);
+                    $licensedContent = str_replace($matches[0], $phpHeader, $content);
+                    ++$updates;
+                } else {
+                    $this->output->writeln(sprintf('<fg=yellow>[=] %s</>', $file->getRealPath()), OutputInterface::VERBOSITY_VERY_VERBOSE);
+                    ++$untouched;
                 }
             } else {
-                $this->output->writeln(sprintf('<fg=red>[-] %s</>', $file->getRealPath()), OutputInterface::VERBOSITY_VERY_VERBOSE);
-                ++$ignored;
+                $this->output->writeln(sprintf('<fg=green>[+] %s</>', $file->getRealPath()), OutputInterface::VERBOSITY_VERY_VERBOSE);
+                $licensedContent = preg_replace('/^(?\'opentag\'(\S{1,5})?\n{1,2})?/', '$1'.$license, $content);
+                ++$additions;
+            }
+
+            if ($licensedContent !== null && $mode === self::MODE_NORMAL) {
+                file_put_contents($file->getPathname(), $licensedContent);
             }
         }
         $event = $watch->stop('licenser');
@@ -169,7 +163,6 @@ class Licenser
         $this->output->writeln(sprintf('<fg=green>[+] Additions: %s</>', $additions), OutputInterface::VERBOSITY_VERBOSE);
         $this->output->writeln(sprintf('<fg=cyan>[u] Updates: %s</>', $updates), OutputInterface::VERBOSITY_VERBOSE);
         $this->output->writeln(sprintf('<fg=yellow>[=] Untouched: %s</>', $untouched), OutputInterface::VERBOSITY_VERBOSE);
-        $this->output->writeln(sprintf('<fg=red>[-] Ignored: %s</>', $ignored), OutputInterface::VERBOSITY_VERBOSE);
         $this->output->writeln('');
 
         $processMessage = sprintf('%s file(s) has been processed in %s ms, memory usage %.2F MiB', $total, $event->getDuration(), $event->getMemory() / 1024 / 1024);

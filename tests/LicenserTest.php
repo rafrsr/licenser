@@ -49,13 +49,16 @@ EOS;
         $this->config->setParameters(['package' => 'Licenser'])
             ->setLicense(file_get_contents($this->fixturesDir.DIRECTORY_SEPARATOR.'license'));
 
+        $this->config->getFinder()->name('*.js');
         Licenser::create($this->config, $this->output)->process();
 
         $expected = $this->fixturesDir.DIRECTORY_SEPARATOR.'expected'.DIRECTORY_SEPARATOR;
         self::assertFileEquals($expected.'file.php', $this->tempDir.DIRECTORY_SEPARATOR.'file.php');
         self::assertFileEquals($expected.'file2.php', $this->tempDir.DIRECTORY_SEPARATOR.'file2.php');
         self::assertFileEquals($expected.'file3.php', $this->tempDir.DIRECTORY_SEPARATOR.'file3.php');
-        self::assertContains('4 file(s) has been processed in', $this->output->fetch());
+        self::assertFileEquals($expected.'shortag.php', $this->tempDir.DIRECTORY_SEPARATOR.'shortag.php');
+        self::assertFileEquals($expected.'javascript.js', $this->tempDir.DIRECTORY_SEPARATOR.'javascript.js');
+        self::assertContains('5 file(s) has been processed in', $this->output->fetch());
     }
 
     public function testLicenserWithParameters()
@@ -100,6 +103,7 @@ EOS;
 
     public function testLicenserCheckOnly()
     {
+        $this->config->getFinder()->name('*.js');
         Licenser::create($this->config, $this->output)->process(Licenser::MODE_CHECK_ONLY);
         $expected
             = <<<EOS
@@ -113,20 +117,22 @@ EOS;
         self::assertNotContains($expected, file_get_contents($this->tempDir.DIRECTORY_SEPARATOR.'file2.php'));
         self::assertNotContains($expected, file_get_contents($this->tempDir.DIRECTORY_SEPARATOR.'file3.php'));
         self::assertNotContains($expected, file_get_contents($this->tempDir.DIRECTORY_SEPARATOR.'file3.php'));
+        self::assertNotContains($expected, file_get_contents($this->tempDir.DIRECTORY_SEPARATOR.'javascript.js'));
         $output = $this->output->fetch();
-        self::assertContains('[ERROR] 3 file(s) should be updated.', $output);
-        self::assertContains('4 file(s) has been processed in', $output);
+        self::assertContains('[ERROR] 5 file(s) should be updated.', $output);
+        self::assertContains('5 file(s) has been processed in', $output);
 
-        $this->testBasicLicenser();
+        Licenser::create($this->config, $this->output)->process();
 
         //recheck after process
         Licenser::create($this->config, $this->output)->process(Licenser::MODE_CHECK_ONLY);
         self::assertContains($expected, file_get_contents($this->tempDir.DIRECTORY_SEPARATOR.'file2.php'));
         self::assertContains($expected, file_get_contents($this->tempDir.DIRECTORY_SEPARATOR.'file3.php'));
         self::assertContains($expected, file_get_contents($this->tempDir.DIRECTORY_SEPARATOR.'file3.php'));
+        self::assertContains($expected, file_get_contents($this->tempDir.DIRECTORY_SEPARATOR.'javascript.js'));
         $output = $this->output->fetch();
         self::assertContains('[OK] All files contains a valid license header. ', $output);
-        self::assertContains('4 file(s) has been processed in', $output);
+        self::assertContains('5 file(s) has been processed in', $output);
     }
 
     public function testSetGetConfig()
