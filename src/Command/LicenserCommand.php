@@ -151,22 +151,22 @@ class LicenserCommand extends Command
     {
         $source = $input->getArgument('source');
         $license = $input->getArgument('license');
+        $configArray = [];
 
         $finder = [];
         if ($input->getOption('finder')) {
-            foreach ($input->getOption('finder') as $param) {
-                if (strpos($param, ':') !== false) {
-                    list($name, $value) = explode(':', $param, 2);
-                    $finder[$name][] = $value;
+            foreach ($input->getOption('finder') as $finderOption) {
+                if (strpos($finderOption, ':') !== false) {
+                    list($option, $value) = explode(':', $finderOption, 2);
+                    $finder[$option][] = $value;
                 } else {
-                    $msg = sprintf('Invalid finder option "%s", should have the format "option:value", e.g. -f notName:*Test.php', $param);
+                    $msg = sprintf('Invalid finder option "%s", should have the format "option:value", e.g. -f notName:*Test.php', $finderOption);
                     throw new \InvalidArgumentException($msg);
                 }
             }
         }
         $configArray['finder'] = $finder;
 
-        $configArray = [];
         if (file_exists($source)) {
             if (is_dir($source)) {
                 $finder['name'] = '*.php';
