@@ -62,6 +62,12 @@ class LicenserCommand extends Command
                 'Parameters to pass to the license file'
             )
             ->addOption(
+                'finder',
+                'f',
+                InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY,
+                'Configure the finder'
+            )
+            ->addOption(
                 'check-only',
                 '',
                 InputOption::VALUE_NONE,
@@ -146,20 +152,35 @@ class LicenserCommand extends Command
         $source = $input->getArgument('source');
         $license = $input->getArgument('license');
 
+        $finder = [];
+        if ($input->getOption('finder')) {
+            foreach ($input->getOption('finder') as $param) {
+                if (strpos($param, ':') !== false) {
+                    list($name, $value) = explode(':', $param, 2);
+                    $finder[$name][] = $value;
+                } else {
+                    $msg = sprintf('Invalid finder option "%s", should have the format "option:value", e.g. -f notName:*Test.php', $param);
+                    throw new \InvalidArgumentException($msg);
+                }
+            }
+        }
+        $configArray['finder'] = $finder;
+
         $configArray = [];
         if (file_exists($source)) {
             if (is_dir($source)) {
-                $configArray['finder']['name'] = '*.php';
-                $configArray['finder']['in'] = realpath($source);
+                $finder['name'] = '*.php';
+                $finder['in'] = realpath($source);
             } else {
                 $file = new \SplFileInfo($source);
-                $configArray['finder']['name'] = $file->getFilename();
-                $configArray['finder']['in'] = realpath($file->getPath());
-                $configArray['finder']['depth'] = 0;
+                $finder['name'] = $file->getFilename();
+                $finder['in'] = realpath($file->getPath());
+                $finder['depth'] = 0;
             }
         } else {
             throw new FileNotFoundException(null, 0, null, $source);
         }
+        $configArray['finder'] = $finder;
 
         $params = [];
         if ($input->getOption('param')) {

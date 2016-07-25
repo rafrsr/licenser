@@ -126,6 +126,53 @@ class LicenserCommandTest extends \PHPUnit_Framework_TestCase
         $command->run($input, $output);
     }
 
+    public function testLicenserInputFinder()
+    {
+        $licenser = self::getMockBuilder(Licenser::class)->disableOriginalConstructor()->getMock();
+        $licenser->expects(self::once())->method('process')->with(Licenser::MODE_NORMAL);
+
+        $config = Config::create()
+            ->setLicense(file_get_contents(implode(DIRECTORY_SEPARATOR, [__DIR__, '..', '..', 'src', 'licenses', 'default'])))
+            ->setFinder(
+                Finder::create()->name('*.php')
+                    ->in(realpath($this->tempDir))
+                    ->notName('*Test.php')
+                    ->exclude('vendor')
+            );
+
+        $command = self::getMockBuilder(LicenserCommand::class)->setMethods(['buildLicenser'])->getMock();
+        $command->expects(self::once())->method('buildLicenser')->with($config)->willReturn($licenser);
+
+        $input = new ArrayInput(
+            [
+                'source' => realpath($this->tempDir),
+                '-f' => [
+                    'notName:*Test.php',
+                    'exclude:vendor',
+                ],
+            ]
+        );
+        $output = new DummyOutput();
+        $command->run($input, $output);
+    }
+
+    public function testLicenserInvalidFinderOption()
+    {
+        $command = self::getMockBuilder(LicenserCommand::class)->setMethods(['buildLicenser'])->getMock();
+
+        $input = new ArrayInput(
+            [
+                'source' => realpath($this->tempDir),
+                '-f' => [
+                    'exclude' => 'vendor',
+                ],
+            ]
+        );
+        self::setExpectedExceptionRegExp(\InvalidArgumentException::class, '/Invalid finder option "vendor"/');
+        $output = new DummyOutput();
+        $command->run($input, $output);
+    }
+
     public function testLicenserInvalidSource()
     {
         $command = self::getMockBuilder(LicenserCommand::class)->setMethods(['buildLicenser'])->getMock();
