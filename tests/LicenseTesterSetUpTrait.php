@@ -14,6 +14,7 @@
 namespace Rafrsr\Licenser\Tests;
 
 use Rafrsr\Licenser\Config;
+use Rafrsr\Licenser\ProcessLogger;
 use Symfony\Component\Console\Tests\Fixtures\DummyOutput;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
@@ -40,6 +41,11 @@ trait LicenseTesterSetUpTrait
      */
     protected $output;
 
+    /**
+     * @var ProcessLogger
+     */
+    protected $logger;
+
     public function setUp()
     {
         $fileSystem = new Filesystem();
@@ -56,5 +62,7 @@ trait LicenseTesterSetUpTrait
         $this->config = (Config::create()->setFinder($finder));
         $this->config->setLicense(file_get_contents(implode(DIRECTORY_SEPARATOR, [__DIR__, '..', 'src', 'licenses', 'default'])));
         $this->output = new DummyOutput();
+        $this->logger = new ProcessLogger($this->output);
+        $this->logger->startProcess();
     }
 }

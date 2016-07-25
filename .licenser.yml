@@ -1,9 +1,16 @@
-finder:
-  in:
-    - src
-    - tests
-  notPath:
-    - 'Fixtures'
+finders:
+  php:
+    in:
+      - src
+      - tests
+    notPath:
+      - 'Fixtures'
+  javascript:
+     in:
+      - web\
+     name: '*.js'
+     notPath:
+      - vendor
 parameters:
    author: Rafael SR <https://github.com/rafrsr>
    package: Licenser

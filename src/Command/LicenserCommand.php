@@ -15,6 +15,7 @@ namespace Rafrsr\Licenser\Command;
 
 use Rafrsr\Licenser\Config;
 use Rafrsr\Licenser\Licenser;
+use Rafrsr\Licenser\ProcessLogger;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -101,14 +102,72 @@ class LicenserCommand extends Command
             $mode = Licenser::MODE_DRY_RUN;
         }
 
-        if ($configFile = $input->getOption('config')) {
-            $configArray = $this->parseYml($configFile);
+        $logger = new ProcessLogger($output);
+        $logger->startProcess($mode);
 
+        if ($yml = $input->getOption('config')) {
+            $this->processFromYML($yml, $input, $mode, $logger);
+        } else {
+            $this->processFromInput($input, $mode, $logger);
+        }
+
+        $logger->finishProcess();
+
+        if ($mode === Licenser::MODE_CHECK_ONLY && $logger->countAdditions() + $logger->countUpdates() > 0) {
+            return 1;
+        }
+
+        return 0;
+    }
+
+    /**
+     * buildLicenser.
+     *
+     * @param Config        $config
+     * @param ProcessLogger $logger
+     *
+     * @return Licenser
+     */
+    protected function buildLicenser(Config $config, ProcessLogger $logger)
+    {
+        return Licenser::create($config, $logger);
+    }
+
+    /**
+     * processFromInput
+     *
+     * @param InputInterface $input
+     * @param string         $mode
+     * @param ProcessLogger  $logger
+     *
+     */
+    private function processFromInput(InputInterface $input, $mode, ProcessLogger $logger)
+    {
+        $configArray = $this->parseInput($input);
+        $this->buildLicenser(Config::createFromArray($configArray), $logger)->process($mode);
+    }
+
+    /**
+     * processFromYML
+     *
+     * @param string         $yml
+     * @param InputInterface $input
+     * @param string         $mode
+     * @param ProcessLogger  $logger
+     */
+    private function processFromYML($yml, InputInterface $input, $mode, ProcessLogger $logger)
+    {
+        $file = new \SplFileInfo(realpath($yml));
+        $workingDir = $file->getPath();
+
+        $ymlConfig = file_get_contents($file->getPathname());
+        $configsArray = $this->parseConfigArray(Yaml::parse($ymlConfig), $workingDir);
+        foreach ($configsArray as $configArray) {
             //allow source override by command
             //https://github.com/rafrsr/licenser/issues/1
             if (($source = $input->getArgument('source'))
                 && file_exists($source)
-                && realpath($source) !== realpath($configFile)//ignore run the command in the config file
+                && realpath($source) !== realpath($yml)//ignore run the command in the config file
             ) {
                 $source = realpath($source);
                 $ins = isset($configArray['finder']['in']) ? $configArray['finder']['in'] : [];
@@ -131,13 +190,9 @@ class LicenserCommand extends Command
                     $configArray['finder']['name'] = pathinfo($source, PATHINFO_BASENAME);
                 }
             }
-        } else {
-            $configArray = $this->parseInput($input);
+
+            $this->buildLicenser(Config::createFromArray($configArray), $logger)->process($mode);
         }
-
-        $this->buildLicenser(Config::createFromArray($configArray), $output)->process($mode);
-
-        return 0;
     }
 
     /**
@@ -147,7 +202,7 @@ class LicenserCommand extends Command
      *
      * @return array array with config, ready to create a config instance
      */
-    protected function parseInput(InputInterface $input)
+    private function parseInput(InputInterface $input)
     {
         $source = $input->getArgument('source');
         $license = $input->getArgument('license');
@@ -202,54 +257,49 @@ class LicenserCommand extends Command
     }
 
     /**
-     * Create config from yml input.
+     * Parse config array from yml and return array of configs parsed.
+     * One yml config can contain multiple configuration to process
+     * when use multiple finders
      *
-     * @param string $ymlFile
+     * @param string $configArray
+     * @param string $workingDir
      *
      * @return array
      */
-    protected function parseYml($ymlFile)
+    private function parseConfigArray($configArray, $workingDir = null)
     {
-        $file = new \SplFileInfo(realpath($ymlFile));
-        $workingDir = $file->getPath();
-
-        $yamlConfig = file_get_contents($file->getPathname());
-        $configArray = Yaml::parse($yamlConfig);
-
-        if (!isset($configArray['license_content'])) {
-            $license = isset($configArray['license']) ? $configArray['license'] : 'default';
-            //resolve absolute path
-            if (file_exists($workingDir.DIRECTORY_SEPARATOR.$license)) {
-                $license = $workingDir.DIRECTORY_SEPARATOR.$license;
+        $configs = [];
+        if (isset($configArray['finder'])) {
+            if (!isset($configArray['license_content'])) {
+                $license = isset($configArray['license']) ? $configArray['license'] : 'default';
+                //resolve absolute path
+                if (file_exists($workingDir.DIRECTORY_SEPARATOR.$license)) {
+                    $license = $workingDir.DIRECTORY_SEPARATOR.$license;
+                }
+                $configArray['license'] = $license;
             }
-            $configArray['license'] = $license;
-        }
 
-        if (isset($configArray['finder']['in'])) {
-            $inArray = [];
-            foreach ((array) $configArray['finder']['in'] as $in) {
-                $inArray[] = $workingDir.DIRECTORY_SEPARATOR.$in;
+            if (isset($configArray['finder']['in'])) {
+                $inArray = [];
+                foreach ((array) $configArray['finder']['in'] as $in) {
+                    $inArray[] = $workingDir.DIRECTORY_SEPARATOR.$in;
+                }
+                $configArray['finder']['in'] = $inArray;
             }
-            $configArray['finder']['in'] = $inArray;
+
+            if (!isset($configArray['finder']['name'])) {
+                $configArray['finder']['name'] = '*.php';
+            }
+
+            return [$configArray];
+        } elseif (isset($configArray['finders'])) {
+            foreach ($configArray['finders'] as $finder) {
+                $config = array_merge($configArray, ['finder' => $finder]);
+                unset($config['finders']);
+                $configs = array_merge($configs, $this->parseConfigArray($config, $workingDir));
+            }
         }
 
-        if (!isset($configArray['finder']['name'])) {
-            $configArray['finder']['name'] = '*.php';
-        }
-
-        return $configArray;
-    }
-
-    /**
-     * buildLicenser.
-     *
-     * @param Config          $config
-     * @param OutputInterface $output
-     *
-     * @return Licenser
-     */
-    protected function buildLicenser(Config $config, OutputInterface $output)
-    {
-        return Licenser::create($config, $output);
+        return $configs;
     }
 }

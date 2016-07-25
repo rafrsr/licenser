@@ -13,11 +13,6 @@
 
 namespace Rafrsr\Licenser;
 
-use Symfony\Component\Console\Formatter\OutputFormatterStyle;
-use Symfony\Component\Console\Helper\FormatterHelper;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Stopwatch\Stopwatch;
-
 /**
  * Licenser.
  *
@@ -39,33 +34,31 @@ class Licenser
     /**
      * An output stream.
      *
-     * @var OutputInterface
+     * @var ProcessLogger
      */
-    private $output;
+    private $logger;
 
     /**
      * Licenser constructor.
      *
-     * @param Config          $config
-     * @param OutputInterface $output
+     * @param Config        $config
+     * @param ProcessLogger $logger
      */
-    public function __construct(Config $config, OutputInterface $output)
+    public function __construct(Config $config, ProcessLogger $logger = null)
     {
-        $this->output = $output;
         $this->config = $config;
+        $this->logger = $logger;
     }
 
     /**
-     * create.
-     *
-     * @param Config          $config
-     * @param OutputInterface $output
+     * @param Config        $config
+     * @param ProcessLogger $logger
      *
      * @return Licenser
      */
-    public static function create(Config $config, OutputInterface $output)
+    public static function create(Config $config, ProcessLogger $logger = null)
     {
-        return new static($config, $output);
+        return new static($config, $logger);
     }
 
     /**
@@ -89,21 +82,21 @@ class Licenser
     }
 
     /**
-     * @return OutputInterface
+     * @return ProcessLogger
      */
-    public function getOutput()
+    public function getLogger()
     {
-        return $this->output;
+        return $this->logger;
     }
 
     /**
-     * @param OutputInterface $output
+     * @param ProcessLogger $logger
      *
      * @return $this
      */
-    public function setOutput(OutputInterface $output)
+    public function setLogger($logger)
     {
-        $this->output = $output;
+        $this->logger = $logger;
 
         return $this;
     }
@@ -112,90 +105,38 @@ class Licenser
      * Process current config.
      *
      * @param int $mode mode to run the process
-     *
-     * @return int null or 0 if everything went fine, or an error code
      */
     public function process($mode = self::MODE_NORMAL)
     {
         $license = $this->parseLicense($this->config->getLicense());
 
-        $total = 0;
-        $additions = 0;
-        $updates = 0;
-        $untouched = 0;
-
-        $watch = new Stopwatch();
-        $watch->start('licenser');
-
         foreach ($this->config->getFinder()->files() as $file) {
             $content = $file->getContents();
-            ++$total;
-
-            //must start with <?php
             $licensedContent = null;
             //match license in the file header
             if (preg_match('/^(?\'opentag\'(\S{1,5})?\n+)?(?\'license\'\/\**(\s?\**[\S ]+\n*)((?m)^\s*\*[\S ]*\n)+)/', $content, $matches)) {
                 $phpHeader = $matches['opentag'].$license;
                 if ($matches[0] !== $phpHeader) {
-                    $this->output->writeln(sprintf('<fg=cyan>[u] %s</>', $file->getRealPath()), OutputInterface::VERBOSITY_VERY_VERBOSE);
+                    if ($this->logger) {
+                        $this->logger->updated($file);
+                    }
                     $licensedContent = str_replace($matches[0], $phpHeader, $content);
-                    ++$updates;
                 } else {
-                    $this->output->writeln(sprintf('<fg=yellow>[=] %s</>', $file->getRealPath()), OutputInterface::VERBOSITY_VERY_VERBOSE);
-                    ++$untouched;
+                    if ($this->logger) {
+                        $this->logger->untouched($file);
+                    }
                 }
             } else {
-                $this->output->writeln(sprintf('<fg=green>[+] %s</>', $file->getRealPath()), OutputInterface::VERBOSITY_VERY_VERBOSE);
+                if ($this->logger) {
+                    $this->logger->addition($file);
+                }
                 $licensedContent = preg_replace('/^(?\'opentag\'(\S{1,5})?\n{1,2})?/', '$1'.$license, $content);
-                ++$additions;
             }
 
             if ($licensedContent !== null && $mode === self::MODE_NORMAL) {
                 file_put_contents($file->getPathname(), $licensedContent);
             }
         }
-        $event = $watch->stop('licenser');
-
-        $formatter = new FormatterHelper();
-
-        //summary
-        $this->output->writeln('', OutputInterface::VERBOSITY_VERBOSE);
-        $this->output->writeln(sprintf('<fg=green>[+] Additions: %s</>', $additions), OutputInterface::VERBOSITY_VERBOSE);
-        $this->output->writeln(sprintf('<fg=cyan>[u] Updates: %s</>', $updates), OutputInterface::VERBOSITY_VERBOSE);
-        $this->output->writeln(sprintf('<fg=yellow>[=] Untouched: %s</>', $untouched), OutputInterface::VERBOSITY_VERBOSE);
-        $this->output->writeln('');
-
-        $processMessage = sprintf('%s file(s) has been processed in %s ms, memory usage %.2F MiB', $total, $event->getDuration(), $event->getMemory() / 1024 / 1024);
-        if ($mode & self::MODE_NORMAL || $mode & self::MODE_DRY_RUN) {
-            $style = new OutputFormatterStyle('white', ($mode === self::MODE_DRY_RUN) ? 'cyan' : 'green', ['bold']);
-            $this->output->getFormatter()->setStyle('success', $style);
-            $formattedBlock = $formatter->formatBlock($processMessage, 'success', true);
-            $this->output->writeln($formattedBlock);
-        } elseif ($mode & self::MODE_CHECK_ONLY) {
-            $needUpdate = (($additions + $updates) > 0);
-            if ($needUpdate) {
-                $successMsg = sprintf('[ERROR] %s file(s) should be updated.', $additions + $updates);
-            } else {
-                $successMsg = '[OK] All files contains a valid license header.';
-            }
-            $style = new OutputFormatterStyle('white', $needUpdate ? 'red' : 'green', ['bold']);
-            $this->output->getFormatter()->setStyle('success', $style);
-            $formattedBlock = $formatter->formatBlock([$successMsg, $processMessage], 'success', true);
-            $this->output->writeln($formattedBlock);
-
-            if ($needUpdate) {
-                return 1;
-            } else {
-                return 0;
-            }
-        }
-
-        if ($mode === self::MODE_DRY_RUN) {
-            $this->output->writeln('');
-            $this->output->writeln('<fg=yellow>NOTE: The command run in dry-run mode, it not made any changes.</>');
-        }
-
-        return 0;
     }
 
     /**

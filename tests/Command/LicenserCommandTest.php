@@ -41,6 +41,18 @@ class LicenserCommandTest extends \PHPUnit_Framework_TestCase
         self::assertContains('4 file(s) has been processed', $commandTester->getDisplay());
     }
 
+    public function testFullFunctionalCommandCheckOnly()
+    {
+        $application = new LicenserApplication();
+
+        $command = $application->find('licenser');
+        $commandTester = new CommandTester($command);
+        $commandTester->execute(['source' => realpath($this->tempDir), '--check-only' => true]);
+        self::assertContains('[WARN] 4 file(s) should be updated.', $commandTester->getDisplay());
+        self::assertContains('4 file(s) has been processed', $commandTester->getDisplay());
+        self::assertEquals(1, $commandTester->getStatusCode());
+    }
+
     public function testBasicLicenser()
     {
         $licenser = self::getMockBuilder(Licenser::class)->disableOriginalConstructor()->getMock();
@@ -308,6 +320,48 @@ class LicenserCommandTest extends \PHPUnit_Framework_TestCase
         $command->run($input, $output);
     }
 
+    public function testLicenserConfigMultiFinder()
+    {
+        $licenser = self::getMockBuilder(Licenser::class)->disableOriginalConstructor()->getMock();
+        $licenser->expects(self::exactly(2))->method('process')->with(Licenser::MODE_NORMAL);
+
+        $config = Config::create()
+            ->setLicense(file_get_contents(implode(DIRECTORY_SEPARATOR, [__DIR__, '..', '..', 'src', 'licenses', 'default'])))
+            ->setFinder(Finder::create()->name('*.php')->in(realpath($this->tempDir)));
+
+        $configJs = Config::create()
+            ->setLicense(file_get_contents(implode(DIRECTORY_SEPARATOR, [__DIR__, '..', '..', 'src', 'licenses', 'default'])))
+            ->setFinder(Finder::create()->name('*.js')->in(realpath(sys_get_temp_dir().DIRECTORY_SEPARATOR.'src')));
+
+        $command = self::getMockBuilder(LicenserCommand::class)->setMethods(['buildLicenser'])->getMock();
+        $command->expects(self::exactly(2))->method('buildLicenser')
+            ->withConsecutive([$config], [$configJs])->willReturn($licenser);
+
+        $yamlFile = tempnam(sys_get_temp_dir(), 'licenser');
+        $yaml = Yaml::dump(
+            [
+                'finders' => [
+                    'php' => [
+                        'in' => 'licenser',
+                    ],
+                    'javascript' => [
+                        'in' => 'src',
+                        'name' => '*.js',
+                    ],
+                ],
+            ]
+        );
+        file_put_contents($yamlFile, $yaml);
+
+        $input = new ArrayInput(
+            [
+                '--config' => realpath($yamlFile),
+            ]
+        );
+
+        $output = new DummyOutput();
+        $command->run($input, $output);
+    }
 
     public function testLicenserDryRun()
     {
