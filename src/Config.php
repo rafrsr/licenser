@@ -13,10 +13,7 @@
 
 namespace Rafrsr\Licenser;
 
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Filesystem\Exception\FileNotFoundException;
 use Symfony\Component\Finder\Finder;
-use Symfony\Component\Yaml\Yaml;
 
 /**
  * Config.
@@ -51,86 +48,31 @@ class Config
     }
 
     /**
-     * Create config from console input.
+     * Array containing configuration.
      *
-     * @param InputInterface $input
+     * e.g.
+     * [
+     *  'finder' => ['in'=>'absolute/path/to/src']
+     *  'license' => 'mit',
+     *  'parameters => ['author'=>'AuthorName']
+     * ]
+     * All paths given in the array should be absolute paths.
+     * At this point licenser can`t resolve relative paths
+     *
+     * @param array $configArray
+     *
+     * @throws \InvalidArgumentException
      *
      * @return $this
      */
-    public static function createFromInput(InputInterface $input)
+    public static function createFromArray($configArray)
     {
-        $source = $input->getArgument('source');
-        $license = $input->getArgument('license');
-
-        if (file_exists($source)) {
-            $finder = Finder::create();
-            if (is_dir($source)) {
-                $finder->name('*.php')->in(realpath($source));
-            } else {
-                $file = new \SplFileInfo($source);
-                $finder
-                    ->name($file->getFilename())
-                    ->depth(0)
-                    ->in($file->getPath());
-            }
+        if (isset($configArray['license_content'])) {
+            $license = $configArray['license_content'];
         } else {
-            throw new FileNotFoundException(null, 0, null, $source);
-        }
-
-        $params = [];
-        if ($input->getOption('param')) {
-            foreach ($input->getOption('param') as $param) {
-                if (strpos($param, ':') !== false) {
-                    list($name, $value) = explode(':', $param, 2);
-                    $params[$name] = $value;
-                } else {
-                    $msg = sprintf('Invalid parameter "%s", should have the format "name:value", e.g. -p year:%s -p owner:"My Name <email@example.com>"', $param, date('Y'));
-                    throw new \InvalidArgumentException($msg);
-                }
-            }
-        }
-
-        $originLicense = $license;
-        if (!file_exists($license)) {
-            $license = self::resolveBuildInLicense($license);
-        }
-
-        if (!file_exists($license)) {
-            throw new \InvalidArgumentException(sprintf('Invalid license file "%s"', $originLicense));
-        }
-
-        $rawLicense = file_get_contents($license);
-
-        $config = self::create()
-            ->setParameters($params)
-            ->setLicense($rawLicense)
-            ->setFinder($finder);
-
-        return $config;
-    }
-
-    /**
-     * Create config from yml input.
-     *
-     * @param string $ymlFile
-     *
-     * @return Config
-     */
-    public static function createFromYml($ymlFile)
-    {
-        $config = new static();
-        $file = new \SplFileInfo(realpath($ymlFile));
-        $workingDir = $file->getPath();
-
-        $yamlConfig = file_get_contents($file->getPathname());
-        $arrayConfig = Yaml::parse($yamlConfig);
-
-        if (isset($arrayConfig['license_content'])) {
-            $license = $arrayConfig['license_content'];
-        } else {
-            $license = isset($arrayConfig['license']) ? $arrayConfig['license'] : 'default';
-            if (file_exists($workingDir.DIRECTORY_SEPARATOR.$license)) {
-                $license = file_get_contents($workingDir.DIRECTORY_SEPARATOR.$license);
+            $license = isset($configArray['license']) ? $configArray['license'] : 'default';
+            if (file_exists($license)) {
+                $license = file_get_contents($license);
             } elseif (file_exists(self::resolveBuildInLicense($license))) {
                 $license = file_get_contents(self::resolveBuildInLicense($license));
             } else {
@@ -138,51 +80,50 @@ class Config
             }
         }
 
-        $config->setLicense($license);
-
-        if (isset($arrayConfig['parameters'])) {
-            foreach ($arrayConfig['parameters'] as &$parameter) {
+        $parameters = [];
+        if (isset($configArray['parameters'])) {
+            foreach ($configArray['parameters'] as $name => $value) {
                 //try to resolve constants
-                if (strpos($parameter, '@') === 0 && defined(substr($parameter, 1))) {
-                    $parameter = constant(substr($parameter, 1));
+                if (strpos($value, '@') === 0 && defined(substr($value, 1))) {
+                    $value = constant(substr($value, 1));
                 }
-            }
 
-            $config->setParameters(isset($arrayConfig['parameters']) ? $arrayConfig['parameters'] : []);
+                $parameters[$name] = $value;
+            }
         }
 
-        if (isset($arrayConfig['finder']['in'])) {
-            $inArray = [];
-            foreach ((array) $arrayConfig['finder']['in'] as $in) {
-                $inArray[] = $workingDir.DIRECTORY_SEPARATOR.$in;
-            }
-            $arrayConfig['finder']['in'] = $inArray;
-        } else {
-            throw new \LogicException('Invalid configuration, value of "finder.in" is required to locate source files.');
+        if (!isset($configArray['finder']['name'])) {
+            $configArray['finder']['name'] = '*.php'; //default file types
         }
 
-        if (!isset($arrayConfig['finder']['name'])) {
-            $arrayConfig['finder']['name'] = '*.php';
+        if (!isset($configArray['finder']['in'])) {
+            throw new \LogicException('Invalid configuration, at least one source is required to locate files.');
         }
 
         $finder = new Finder();
-        foreach ($arrayConfig['finder'] as $method => $arguments) {
-            if (false === method_exists($finder, $method)) {
-                throw new \InvalidArgumentException(
-                    sprintf(
-                        'The method "Finder::%s" does not exist.',
-                        $method
-                    )
-                );
-            }
+        if (isset($configArray['finder'])) {
+            foreach ($configArray['finder'] as $method => $arguments) {
+                if (false === method_exists($finder, $method)) {
+                    throw new \InvalidArgumentException(
+                        sprintf(
+                            'The method "Finder::%s" does not exist.',
+                            $method
+                        )
+                    );
+                }
 
-            $arguments = (array) $arguments;
+                $arguments = (array) $arguments;
 
-            foreach ($arguments as $argument) {
-                $finder->$method($argument);
+                foreach ($arguments as $argument) {
+                    $finder->$method($argument);
+                }
             }
         }
-        $config->setFinder($finder);
+
+        $config = self::create()
+            ->setLicense($license)
+            ->setParameters($parameters)
+            ->setFinder($finder);
 
         return $config;
     }
@@ -284,7 +225,5 @@ class Config
         if (file_exists($license)) {
             return $license;
         }
-
-        return;
     }
 }

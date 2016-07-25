@@ -20,7 +20,8 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Finder\Finder;
+use Symfony\Component\Filesystem\Exception\FileNotFoundException;
+use Symfony\Component\Yaml\Yaml;
 
 /**
  * LicenserCommand.
@@ -95,7 +96,7 @@ class LicenserCommand extends Command
         }
 
         if ($configFile = $input->getOption('config')) {
-            $config = Config::createFromYml($configFile);
+            $configArray = $this->parseYml($configFile);
 
             //allow source override by command
             //https://github.com/rafrsr/licenser/issues/1
@@ -104,40 +105,120 @@ class LicenserCommand extends Command
                 && realpath($source) !== realpath($configFile)//ignore run the command in the config file
             ) {
                 $source = realpath($source);
-                $finderReflection = new \ReflectionClass(Finder::class);
-                $dirsProperty = $finderReflection->getProperty('dirs');
-                $pathsProperty = $finderReflection->getProperty('paths');
-                $dirsProperty->setAccessible(true);
-                $pathsProperty->setAccessible(true);
+                $ins = isset($configArray['finder']['in']) ? $configArray['finder']['in'] : [];
                 //obtaining related path based on "in" directories
                 //allowing filter results using the finder config
-                foreach ($dirsProperty->getValue($config->getFinder()) as $in) {
+                foreach ($ins as $in) {
                     if (strpos($source, $in) !== false) {
                         $path = str_replace($in, null, $source);
                         //remove any \ or / in the path start
                         $path = preg_replace('/^[\/\\\]/', null, $path);
                         $path = str_replace('\\', '/', $path); //convert \ -> /
                         if (is_file($source)) {
-                            $path = pathinfo($path)['dirname'];
+                            $path = pathinfo($path, PATHINFO_DIRNAME);
                         }
-                        $pathsProperty->setValue($config->getFinder(), [$path]);
+                        $configArray['finder']['path'] = $path;
                     }
                 }
 
                 if (is_file($source)) {
-                    $file = new \SplFileInfo($source);
-                    $nameProperty = $finderReflection->getProperty('names');
-                    $nameProperty->setAccessible(true);
-                    $nameProperty->setValue($config->getFinder(), [$file->getFilename()]);
+                    $configArray['finder']['name'] = pathinfo($source, PATHINFO_BASENAME);
                 }
             }
         } else {
-            $config = Config::createFromInput($input);
+            $configArray = $this->parseInput($input);
         }
 
-        $this->buildLicenser($config, $output)->process($mode);
+        $this->buildLicenser(Config::createFromArray($configArray), $output)->process($mode);
 
         return 0;
+    }
+
+    /**
+     * Parse input and return config array.
+     *
+     * @param InputInterface $input
+     *
+     * @return array array with config, ready to create a config instance
+     */
+    protected function parseInput(InputInterface $input)
+    {
+        $source = $input->getArgument('source');
+        $license = $input->getArgument('license');
+
+        $configArray = [];
+        if (file_exists($source)) {
+            if (is_dir($source)) {
+                $configArray['finder']['name'] = '*.php';
+                $configArray['finder']['in'] = realpath($source);
+            } else {
+                $file = new \SplFileInfo($source);
+                $configArray['finder']['name'] = $file->getFilename();
+                $configArray['finder']['in'] = $file->getPath();
+                $configArray['finder']['depth'] = 0;
+            }
+        } else {
+            throw new FileNotFoundException(null, 0, null, $source);
+        }
+
+        $params = [];
+        if ($input->getOption('param')) {
+            foreach ($input->getOption('param') as $param) {
+                if (strpos($param, ':') !== false) {
+                    list($name, $value) = explode(':', $param, 2);
+                    $params[$name] = $value;
+                } else {
+                    $msg = sprintf('Invalid parameter "%s", should have the format "name:value", e.g. -p year:%s -p owner:"My Name <email@example.com>"', $param, date('Y'));
+                    throw new \InvalidArgumentException($msg);
+                }
+            }
+        }
+
+        $configArray['parameters'] = $params;
+        $configArray['license'] = $license;
+
+        return $configArray;
+    }
+
+    /**
+     * Create config from yml input.
+     *
+     * @param string $ymlFile
+     *
+     * @return array
+     */
+    protected function parseYml($ymlFile)
+    {
+        $file = new \SplFileInfo(realpath($ymlFile));
+        $workingDir = $file->getPath();
+
+        $yamlConfig = file_get_contents($file->getPathname());
+        $configArray = Yaml::parse($yamlConfig);
+
+        if (!isset($configArray['license_content'])) {
+            $license = isset($configArray['license']) ? $configArray['license'] : 'default';
+            //resolve absolute path
+            if (file_exists($workingDir.DIRECTORY_SEPARATOR.$license)) {
+                $license = $workingDir.DIRECTORY_SEPARATOR.$license;
+            }
+            $configArray['license'] = $license;
+        }
+
+        if (isset($configArray['finder']['in'])) {
+            $inArray = [];
+            foreach ((array) $configArray['finder']['in'] as $in) {
+                $inArray[] = $workingDir.DIRECTORY_SEPARATOR.$in;
+            }
+            $configArray['finder']['in'] = $inArray;
+        } else {
+            throw new \LogicException('Invalid configuration, value of "finder.in" is required to locate source files.');
+        }
+
+        if (!isset($configArray['finder']['name'])) {
+            $configArray['finder']['name'] = '*.php';
+        }
+
+        return $configArray;
     }
 
     /**

@@ -11,16 +11,12 @@
  * @version 1.0.3
  */
 
-namespace Rafrsr\Licenser\Tests;
+namespace Rafrsr\Licenser\tests;
 
-use Rafrsr\Licenser\Command\LicenserCommand;
 use Rafrsr\Licenser\Config;
 use Rafrsr\Licenser\Licenser;
-use Symfony\Component\Console\Input\ArrayInput;
-use Symfony\Component\Filesystem\Exception\FileNotFoundException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
-use Symfony\Component\Yaml\Yaml;
 
 class ConfigTest extends \PHPUnit_Framework_TestCase
 {
@@ -56,147 +52,37 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         self::assertFalse($config->hasParameter('name'));
     }
 
-    public function testCreateFromInputBasic()
+    public function testCreateFromArrayBasic()
     {
         $config = Config::create()
             ->setLicense(file_get_contents(implode(DIRECTORY_SEPARATOR, [__DIR__, '..', 'src', 'licenses', 'default'])))
             ->setFinder(Finder::create()->name('*.php')->in(realpath($this->tempDir)));
 
-        $input = $this->buildInput(
-            [
-                'source' => realpath($this->tempDir),
-            ]
-        );
+        $array = [
+            'finder' => [
+                'in' => realpath($this->tempDir),
+            ],
+        ];
 
-        self::assertEquals($config, Config::createFromInput($input));
+        self::assertEquals($config, Config::createFromArray($array));
     }
 
-    public function tesetCreateFromInputCustomLicense()
+    public function testCreateFromArrayCustomLicense()
     {
         $config = Config::create()
             ->setLicense(file_get_contents($this->fixturesDir.DIRECTORY_SEPARATOR.'license'))
             ->setFinder(Finder::create()->name('*.php')->in(realpath($this->tempDir)));
 
-        $input = $this->buildInput(
-            [
-                'source' => realpath($this->tempDir),
-                'license' => realpath($this->fixturesDir.DIRECTORY_SEPARATOR.'license'),
-            ]
-        );
-        self::assertEquals($config, Config::createFromInput($input));
+        $array = [
+            'finder' => [
+                'in' => realpath($this->tempDir),
+            ],
+            'license' => realpath($this->fixturesDir.DIRECTORY_SEPARATOR.'license'),
+        ];
+        self::assertEquals($config, Config::createFromArray($array));
     }
 
-    public function testCreateFromInputWithParameters()
-    {
-        $config = Config::create()
-            ->setLicense(file_get_contents(implode(DIRECTORY_SEPARATOR, [__DIR__, '..', 'src', 'licenses', 'default'])))
-            ->setFinder(Finder::create()->name('*.php')->in(realpath($this->tempDir)))
-            ->setParameters(
-                [
-                    'author' => 'AuthorName',
-                    'version' => 'v1.0',
-                ]
-            );
-
-        $input = $this->buildInput(
-            [
-                'source' => realpath($this->tempDir),
-                '-p' => [
-                    'author:AuthorName',
-                    'version:v1.0',
-                ],
-            ]
-        );
-        self::assertEquals($config, Config::createFromInput($input));
-    }
-
-    public function testCreateFromInputOneFile()
-    {
-        $config = Config::create()
-            ->setLicense(file_get_contents(implode(DIRECTORY_SEPARATOR, [__DIR__, '..', 'src', 'licenses', 'default'])))
-            ->setFinder(Finder::create()->name('file.php')->in(realpath($this->tempDir))->depth(0));
-
-        $input = $this->buildInput(
-            [
-                'source' => realpath($this->tempDir.DIRECTORY_SEPARATOR.'file.php'),
-            ]
-        );
-        self::assertEquals($config, Config::createFromInput($input));
-    }
-
-    public function testCreateFromInputForInvalidFile()
-    {
-        $input = $this->buildInput(
-            [
-                'source' => realpath($this->tempDir.DIRECTORY_SEPARATOR.'file_none.php'),
-            ]
-        );
-        self::expectException(FileNotFoundException::class);
-        Config::createFromInput($input);
-    }
-
-    public function testCreateFromInputInvalidParameter()
-    {
-        $input = $this->buildInput(
-            [
-                'source' => realpath($this->tempDir.DIRECTORY_SEPARATOR.'file.php'),
-                '-p' => [
-                    'author' => 'AuthorName',
-                ],
-            ]
-        );
-        self::setExpectedExceptionRegExp(\InvalidArgumentException::class, '/Invalid parameter "AuthorName"/');
-        Config::createFromInput($input);
-    }
-
-    public function testCreateFromInputInvalidLicenseFile()
-    {
-        $input = $this->buildInput(
-            [
-                'source' => realpath($this->tempDir.DIRECTORY_SEPARATOR.'file.php'),
-                'license' => 'my_license',
-            ]
-        );
-        self::setExpectedExceptionRegExp(\InvalidArgumentException::class, '/Invalid license file "my_license"/');
-        Config::createFromInput($input);
-    }
-
-    public function testCreateFromYmlBasic()
-    {
-        $config = Config::create()
-            ->setLicense(file_get_contents(implode(DIRECTORY_SEPARATOR, [__DIR__, '..', 'src', 'licenses', 'default'])))
-            ->setFinder(Finder::create()->name('*.php')->in(realpath(sys_get_temp_dir().DIRECTORY_SEPARATOR.'licenser')));
-
-        $yml = $this->buildYml(
-            [
-                'finder' => [
-                        'in' => 'licenser',
-                    ],
-            ]
-        );
-
-        self::assertEquals($config, Config::createFromYml($yml));
-    }
-
-    public function testCreateFromYmlCustomLicense()
-    {
-        $config = Config::create()
-            ->setLicense(file_get_contents($this->fixturesDir.DIRECTORY_SEPARATOR.'license'))
-            ->setFinder(Finder::create()->name('*.php')->in(realpath(sys_get_temp_dir().DIRECTORY_SEPARATOR.'licenser')));
-
-        $yml = $this->buildYml(
-            [
-                'finder' => [
-                        'in' => 'licenser',
-                    ],
-                'license' => 'licenser/license',
-            ]
-        );
-
-        self::assertEquals($config, Config::createFromYml($yml));
-    }
-
-    public function testCreateFromYmlWithParameters()
+    public function testCreateFromArrayWithParameters()
     {
         $config = Config::create()
             ->setLicense(file_get_contents(implode(DIRECTORY_SEPARATOR, [__DIR__, '..', 'src', 'licenses', 'default'])))
@@ -208,56 +94,50 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
                 ]
             );
 
-        $yml = $this->buildYml(
-            [
-                'finder' => [
-                        'in' => 'licenser',
-                    ],
-                'parameters' => [
-                    'name' => 'Author Name',
-                    'version' => '@Rafrsr\Licenser\Licenser::VERSION',
-                ],
-            ]
-        );
+        $array = [
+            'finder' => [
+                'in' => realpath(sys_get_temp_dir().DIRECTORY_SEPARATOR.'licenser'),
+            ],
+            'parameters' => [
+                'name' => 'Author Name',
+                'version' => '@Rafrsr\Licenser\Licenser::VERSION',
+            ],
+        ];
 
-        self::assertEquals($config, Config::createFromYml($yml));
+        self::assertEquals($config, Config::createFromArray($array));
     }
 
-    public function testCreateFromYmlWithLicenseContent()
+    public function testCreateFromArrayWithLicenseContent()
     {
         $license = "Custom License Content \n (c) CopyRight";
         $config = Config::create()
             ->setLicense($license)
             ->setFinder(Finder::create()->name('*.php')->in(realpath(sys_get_temp_dir().DIRECTORY_SEPARATOR.'licenser')));
 
-        $yml = $this->buildYml(
-            [
-                'finder' => [
-                        'in' => 'licenser',
-                    ],
-                'license_content' => $license,
-            ]
-        );
+        $array = [
+            'finder' => [
+                'in' => realpath(sys_get_temp_dir().DIRECTORY_SEPARATOR.'licenser'),
+            ],
+            'license_content' => $license,
+        ];
 
-        self::assertEquals($config, Config::createFromYml($yml));
+        self::assertEquals($config, Config::createFromArray($array));
     }
 
-    public function testCreateFromYmlWithInvalidLicense()
+    public function testCreateFromArrayWithInvalidLicense()
     {
-        $yml = $this->buildYml(
-            [
-                'finder' => [
-                        'in' => 'licenser',
-                    ],
-                'license' => 'my_license',
-            ]
-        );
+        $array = [
+            'finder' => [
+                'in' => 'licenser',
+            ],
+            'license' => 'my_license',
+        ];
 
         self::setExpectedExceptionRegExp(\InvalidArgumentException::class, '/Invalid license file "my_license"/');
-        Config::createFromYml($yml);
+        Config::createFromArray($array);
     }
 
-    public function testCreateFromYmlCustomizeFinder()
+    public function testCreateFromArrayCustomizeFinder()
     {
         $fileSystem = new Filesystem();
         $fileSystem->mkdir(sys_get_temp_dir().DIRECTORY_SEPARATOR.'other');
@@ -288,73 +168,49 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
                     ->date('yesterday')
             );
 
-        $yml = $this->buildYml(
-            [
-                'finder' => [
-                        'in' => [
-                            'licenser',
-                            'other',
-                        ],
-                        'name' => [
-                            '*.php',
-                            '*.php4',
-                        ],
-                        'notPath' => 'notPath',
-                        'contains' => 'license',
-                        'path' => ['dir', 'other'],
-                        'exclude' => ['*Test.php', 'config.php'],
-                        'ignoreDotFiles' => true,
-                        'followLinks' => true,
-                        'depth' => 2,
-                        'notContains' => 'license',
-                        'size' => '>= 1K',
-                        'date' => 'yesterday',
-                    ],
-            ]
-        );
+        $array = [
+            'finder' => [
+                'in' => [
+                    realpath(sys_get_temp_dir().DIRECTORY_SEPARATOR.'licenser'),
+                    realpath(sys_get_temp_dir().DIRECTORY_SEPARATOR.'other'),
+                ],
+                'name' => [
+                    '*.php',
+                    '*.php4',
+                ],
+                'notPath' => 'notPath',
+                'contains' => 'license',
+                'path' => ['dir', 'other'],
+                'exclude' => ['*Test.php', 'config.php'],
+                'ignoreDotFiles' => true,
+                'followLinks' => true,
+                'depth' => 2,
+                'notContains' => 'license',
+                'size' => '>= 1K',
+                'date' => 'yesterday',
+            ],
+        ];
 
-        self::assertEquals($config, Config::createFromYml($yml));
+        self::assertEquals($config, Config::createFromArray($array));
     }
 
-    public function testCreateFromYmlCustomizeFinderInvalidMethod()
+    public function testCreateFromArrayCustomizeFinderInvalidMethod()
     {
-        $yml = $this->buildYml(
-            [
-                'finder' => [
-                        'in' => [
-                            'licenser',
-                            'other',
-                        ],
-                        'find' => '*',
-                    ],
-            ]
-        );
+        $array = [
+            'finder' => [
+                'in' => [
+                    realpath(sys_get_temp_dir().DIRECTORY_SEPARATOR.'licenser'),
+                ],
+                'find' => '*',
+            ],
+        ];
         self::setExpectedExceptionRegExp(\InvalidArgumentException::class, '/The method "Finder::find" does not exist/');
-        Config::createFromYml($yml);
+        Config::createFromArray($array);
     }
 
     public function testCreateFromYmlWithMissingFinderIn()
     {
-        $yml = $this->buildYml([]);
-
-        self::setExpectedExceptionRegExp(\LogicException::class, '/Invalid configuration, value of "finder.in"/');
-        Config::createFromYml($yml);
-    }
-
-    protected function buildInput($array)
-    {
-        $input = new ArrayInput($array);
-        $command = new LicenserCommand();
-        $input->bind($command->getDefinition());
-
-        return $input;
-    }
-
-    protected function buildYml($array)
-    {
-        $tempFile = tempnam(sys_get_temp_dir(), 'licenser');
-        file_put_contents($tempFile, Yaml::dump($array));
-
-        return $tempFile;
+        self::setExpectedExceptionRegExp(\LogicException::class, '/Invalid configuration, at least one source is required to locate files/');
+        Config::createFromArray([]);
     }
 }
