@@ -8,7 +8,7 @@
  *
  * @author Rafael SR <https://github.com/rafrsr>
  * @package Licenser
- * @version 1.0.3
+ * @version 1.0.4
  */
 
 namespace Rafrsr\Licenser\Tests\Command;
