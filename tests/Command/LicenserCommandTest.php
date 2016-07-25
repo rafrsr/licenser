@@ -21,6 +21,7 @@ use Rafrsr\Licenser\Tests\LicenseTesterSetUpTrait;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\Console\Tests\Fixtures\DummyOutput;
+use Symfony\Component\Filesystem\Exception\FileNotFoundException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Yaml\Yaml;
@@ -55,6 +56,118 @@ class LicenserCommandTest extends \PHPUnit_Framework_TestCase
         $input = new ArrayInput(
             [
                 'source' => realpath($this->tempDir),
+            ]
+        );
+        $output = new DummyOutput();
+        $command->run($input, $output);
+    }
+
+    public function testBasicLicenserToOneFile()
+    {
+        $licenser = self::getMockBuilder(Licenser::class)->disableOriginalConstructor()->getMock();
+        $licenser->expects(self::once())->method('process')->with(Licenser::MODE_NORMAL);
+
+        $config = Config::create()
+            ->setLicense(file_get_contents(implode(DIRECTORY_SEPARATOR, [__DIR__, '..', '..', 'src', 'licenses', 'default'])))
+            ->setFinder(Finder::create()->name('file.php')->in(realpath($this->tempDir))->depth(0));
+
+        $command = self::getMockBuilder(LicenserCommand::class)->setMethods(['buildLicenser'])->getMock();
+        $command->expects(self::once())->method('buildLicenser')->with($config)->willReturn($licenser);
+
+        $input = new ArrayInput(
+            [
+                'source' => $this->tempDir.DIRECTORY_SEPARATOR.'file.php',
+            ]
+        );
+        $output = new DummyOutput();
+        $command->run($input, $output);
+    }
+
+    public function testLicenserInputParameters()
+    {
+        $licenser = self::getMockBuilder(Licenser::class)->disableOriginalConstructor()->getMock();
+        $licenser->expects(self::once())->method('process')->with(Licenser::MODE_NORMAL);
+
+        $config = Config::create()
+            ->setLicense(file_get_contents(implode(DIRECTORY_SEPARATOR, [__DIR__, '..', '..', 'src', 'licenses', 'default'])))
+            ->setFinder(Finder::create()->name('*.php')->in(realpath($this->tempDir)))
+            ->setParameters(['author' => 'AuthorName', 'version' => 'v1.0']);
+
+        $command = self::getMockBuilder(LicenserCommand::class)->setMethods(['buildLicenser'])->getMock();
+        $command->expects(self::once())->method('buildLicenser')->with($config)->willReturn($licenser);
+
+        $input = new ArrayInput(
+            [
+                'source' => realpath($this->tempDir),
+                '-p' => [
+                    'author:AuthorName',
+                    'version:v1.0',
+                ],
+            ]
+        );
+        $output = new DummyOutput();
+        $command->run($input, $output);
+    }
+
+    public function testLicenserInvalidParameters()
+    {
+        $command = self::getMockBuilder(LicenserCommand::class)->setMethods(['buildLicenser'])->getMock();
+
+        $input = new ArrayInput(
+            [
+                'source' => realpath($this->tempDir),
+                '-p' => [
+                    'author' => 'AuthorName',
+                ],
+            ]
+        );
+        self::setExpectedExceptionRegExp(\InvalidArgumentException::class, '/Invalid parameter "AuthorName"/');
+        $output = new DummyOutput();
+        $command->run($input, $output);
+    }
+
+    public function testLicenserInvalidSource()
+    {
+        $command = self::getMockBuilder(LicenserCommand::class)->setMethods(['buildLicenser'])->getMock();
+
+        $input = new ArrayInput(
+            [
+                'source' => 'path',
+            ]
+        );
+        self::setExpectedExceptionRegExp(FileNotFoundException::class);
+        $output = new DummyOutput();
+        $command->run($input, $output);
+    }
+
+    public function testLicenserYmlConfigResolveLicenseAbosulutePath()
+    {
+        $fileSystem = new Filesystem();
+        $fileSystem->mkdir(sys_get_temp_dir().DIRECTORY_SEPARATOR.'src');
+        file_put_contents(sys_get_temp_dir().DIRECTORY_SEPARATOR.'my_license', 'My license content');
+
+        $licenser = self::getMockBuilder(Licenser::class)->disableOriginalConstructor()->getMock();
+        $licenser->expects(self::once())->method('process')->with(Licenser::MODE_NORMAL);
+
+        $config = Config::create()
+            ->setLicense('My license content')
+            ->setFinder(Finder::create()->name('*.php')->in(realpath(sys_get_temp_dir().DIRECTORY_SEPARATOR.'src')));
+
+        $command = self::getMockBuilder(LicenserCommand::class)->setMethods(['buildLicenser'])->getMock();
+        $command->expects(self::once())->method('buildLicenser')->with($config)->willReturn($licenser);
+
+        $input = new ArrayInput(
+            [
+                'source' => realpath($this->tempDir),
+                '--config' => $this->buildYml(
+                    [
+                        'finder' => [
+                            'in' => 'src',
+
+                        ],
+                        'license' => 'my_license',
+                    ]
+                ),
             ]
         );
         $output = new DummyOutput();
@@ -132,8 +245,8 @@ class LicenserCommandTest extends \PHPUnit_Framework_TestCase
         $yaml = Yaml::dump(
             [
                 'finder' => [
-                        'in' => 'licenser',
-                    ],
+                    'in' => 'licenser',
+                ],
             ]
         );
         file_put_contents($yamlFile, $yaml);
@@ -147,6 +260,7 @@ class LicenserCommandTest extends \PHPUnit_Framework_TestCase
         $output = new DummyOutput();
         $command->run($input, $output);
     }
+
 
     public function testLicenserDryRun()
     {
@@ -182,5 +296,13 @@ class LicenserCommandTest extends \PHPUnit_Framework_TestCase
         );
         $output = new DummyOutput();
         $command->run($input, $output);
+    }
+
+    protected function buildYml($array)
+    {
+        $tempFile = tempnam(sys_get_temp_dir(), 'licenser');
+        file_put_contents($tempFile, Yaml::dump($array));
+
+        return $tempFile;
     }
 }

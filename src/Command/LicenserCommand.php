@@ -154,7 +154,7 @@ class LicenserCommand extends Command
             } else {
                 $file = new \SplFileInfo($source);
                 $configArray['finder']['name'] = $file->getFilename();
-                $configArray['finder']['in'] = $file->getPath();
+                $configArray['finder']['in'] = realpath($file->getPath());
                 $configArray['finder']['depth'] = 0;
             }
         } else {
@@ -210,8 +210,6 @@ class LicenserCommand extends Command
                 $inArray[] = $workingDir.DIRECTORY_SEPARATOR.$in;
             }
             $configArray['finder']['in'] = $inArray;
-        } else {
-            throw new \LogicException('Invalid configuration, value of "finder.in" is required to locate source files.');
         }
 
         if (!isset($configArray['finder']['name'])) {
