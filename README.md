@@ -190,6 +190,7 @@ In the second example the `finder` is overwritten and apply the given config to 
 > To see all available options and usage refer to: [Finder](http://symfony.com/doc/current/components/finder.html).
 > All options given in this configuration are used to build a instance of Finder.
     
+- **finders:**  _[array]_ array of finders to use multiple finders for different file types or sources  
 - **license:**  _[string]_ name of build-in license to use or relative filename    
 - **license_content:**  _[string]_ alternative to create your license inline without reference to any file
 - **parameters:** _[array]_ array of parameters to pass to template  
@@ -210,6 +211,30 @@ finder:
     - *.php
     - *.js
 ````
+
+### Muti-finder for each type of file
+
+**Licenser** support configure more than one finder in order to find different files types on different folders,
+ use `finders` instead of `finder` to enable this.
+
+#### e.g:
+````yml
+#.licenser.yml
+finders:
+  php:
+    in:
+      - src
+  javascript:
+     in:
+      - web/js/
+     name: '*.js'
+     notPath:
+      - jquery
+      - bootstrap
+````
+
+The above example file for default(*.php) files in src folder, 
+and *.js files in web/js folder ignoring jquery and bootstrap folders in this location
 
 ### Caution
 
