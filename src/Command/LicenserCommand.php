@@ -134,12 +134,11 @@ class LicenserCommand extends Command
     }
 
     /**
-     * processFromInput
+     * processFromInput.
      *
      * @param InputInterface $input
      * @param string         $mode
      * @param ProcessLogger  $logger
-     *
      */
     private function processFromInput(InputInterface $input, $mode, ProcessLogger $logger)
     {
@@ -148,7 +147,7 @@ class LicenserCommand extends Command
     }
 
     /**
-     * processFromYML
+     * processFromYML.
      *
      * @param string         $yml
      * @param InputInterface $input
@@ -259,7 +258,7 @@ class LicenserCommand extends Command
     /**
      * Parse config array from yml and return array of configs parsed.
      * One yml config can contain multiple configuration to process
-     * when use multiple finders
+     * when use multiple finders.
      *
      * @param string $configArray
      * @param string $workingDir

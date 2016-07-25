@@ -134,7 +134,6 @@ EOS;
         self::assertContains('[WARN] 5 file(s) should be updated.', $output);
         self::assertContains('5 file(s) has been processed in', $output);
 
-
         Licenser::create($this->config, $this->logger)->process(Licenser::MODE_NORMAL);
 
         //recheck after process

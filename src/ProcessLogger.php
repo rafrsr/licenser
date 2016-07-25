@@ -20,7 +20,7 @@ use Symfony\Component\Finder\SplFileInfo;
 use Symfony\Component\Stopwatch\Stopwatch;
 
 /**
- * ProcessLogger
+ * ProcessLogger.
  */
 class ProcessLogger
 {
@@ -71,7 +71,7 @@ class ProcessLogger
     }
 
     /**
-     * startProcess
+     * startProcess.
      *
      * @param int $mode
      */
@@ -112,7 +112,7 @@ class ProcessLogger
     }
 
     /**
-     * @return integer
+     * @return int
      */
     public function countAdditions()
     {
@@ -120,7 +120,7 @@ class ProcessLogger
     }
 
     /**
-     * @return integer
+     * @return int
      */
     public function countTotal()
     {
@@ -128,7 +128,7 @@ class ProcessLogger
     }
 
     /**
-     * @return integer
+     * @return int
      */
     public function countUpdates()
     {
@@ -136,7 +136,7 @@ class ProcessLogger
     }
 
     /**
-     * @return integer
+     * @return int
      */
     public function countUntouched()
     {
@@ -144,7 +144,7 @@ class ProcessLogger
     }
 
     /**
-     * Finish current licenser process log and display results in the output
+     * Finish current licenser process log and display results in the output.
      */
     public function finishProcess()
     {
