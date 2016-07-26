@@ -260,7 +260,7 @@ class LicenserCommand extends Command
      * One yml config can contain multiple configuration to process
      * when use multiple finders.
      *
-     * @param string $configArray
+     * @param array  $configArray
      * @param string $workingDir
      *
      * @return array

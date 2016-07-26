@@ -30,7 +30,7 @@ class ProcessLogger
     private $output;
 
     /**
-     * @var string
+     * @var int
      */
     private $mode;
 
