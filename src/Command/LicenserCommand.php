@@ -164,33 +164,66 @@ class LicenserCommand extends Command
         foreach ($configsArray as $configArray) {
             //allow source override by command
             //https://github.com/rafrsr/licenser/issues/1
-            if (($source = $input->getArgument('source'))
-                && file_exists($source)
-                && realpath($source) !== realpath($yml)//ignore run the command in the config file
-            ) {
-                $source = realpath($source);
-                $ins = isset($configArray['finder']['in']) ? $configArray['finder']['in'] : [];
-                //obtaining related path based on "in" directories
-                //allowing filter results using the finder config
-                foreach ($ins as $in) {
-                    if (strpos($source, $in) !== false) {
-                        $path = str_replace($in, null, $source);
-                        //remove any \ or / in the path start
-                        $path = preg_replace('/^[\/\\\]/', null, $path);
-                        $path = str_replace('\\', '/', $path); //convert \ -> /
-                        if (is_file($source)) {
-                            $path = pathinfo($path, PATHINFO_DIRNAME);
-                        }
-                        $configArray['finder']['path'] = $path;
-                    }
-                }
-
-                if (is_file($source)) {
-                    $configArray['finder']['name'] = pathinfo($source, PATHINFO_BASENAME);
-                }
+            if ($source = $this->getSource($input)) {
+                $this->overrideConfigSource($configArray, $source);
             }
 
             $this->buildLicenser(Config::createFromArray($configArray), $logger)->process($mode);
+        }
+    }
+
+    /**
+     * Extract source from input
+     *
+     * @param InputInterface $input
+     *
+     * @return bool
+     */
+    private function getSource(InputInterface $input)
+    {
+        $validSource = ($source = $input->getArgument('source')) && file_exists($source);
+
+        if ($validSource && $input->getOption('config')) {
+            //if the source file is the config file, is not a source
+            if (realpath($source) === realpath($input->getOption('config'))) {
+                $source = null;
+            }
+        } elseif (!$validSource) {
+            $source = null;
+        }
+
+        return $source;
+    }
+
+    /**
+     * allow source override by command
+     * https://github.com/rafrsr/licenser/issues/1
+     * Add current path and change the name from *.php to given filename in case of file
+     *
+     * @param $configArray
+     * @param $source
+     */
+    private function overrideConfigSource(&$configArray, $source)
+    {
+        $source = realpath($source);
+        $ins = isset($configArray['finder']['in']) ? $configArray['finder']['in'] : [];
+        //obtaining related path based on "in" directories
+        //allowing filter results using the finder config
+        foreach ($ins as $in) {
+            if (strpos($source, $in) !== false) {
+                $path = str_replace($in, null, $source);
+                //remove any \ or / in the path start
+                $path = preg_replace('/^[\/\\\]/', null, $path);
+                $path = str_replace('\\', '/', $path); //convert \ -> /
+                if (is_file($source)) {
+                    $path = pathinfo($path, PATHINFO_DIRNAME);
+                }
+                $configArray['finder']['path'] = $path;
+            }
+        }
+
+        if (is_file($source)) {
+            $configArray['finder']['name'] = pathinfo($source, PATHINFO_BASENAME);
         }
     }
 
