@@ -5,6 +5,7 @@
  *
  * Copyright (c) Author Name <email@Example.com>
  */
+
 namespace SomeNamespace\ChildNamespace;
 
 trait WarehouseBundleAdminTrait

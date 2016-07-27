@@ -14,6 +14,7 @@
 namespace Rafrsr\Licenser\Command;
 
 use Rafrsr\Licenser\Config;
+use Rafrsr\Licenser\ConfigFactory;
 use Rafrsr\Licenser\Licenser;
 use Rafrsr\Licenser\ProcessLogger;
 use Symfony\Component\Console\Command\Command;
@@ -21,8 +22,6 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Filesystem\Exception\FileNotFoundException;
-use Symfony\Component\Yaml\Yaml;
 
 /**
  * LicenserCommand.
@@ -105,10 +104,13 @@ class LicenserCommand extends Command
         $logger = new ProcessLogger($output);
         $logger->startProcess($mode);
 
-        if ($yml = $input->getOption('config')) {
-            $this->processFromYML($yml, $input, $mode, $logger);
+        if ($configFile = $this->extractConfigFile($input)) {
+            foreach (ConfigFactory::createFromConfigFile($configFile, $input) as $config) {
+                $this->buildLicenser($config, $logger)->process($mode);
+            }
         } else {
-            $this->processFromInput($input, $mode, $logger);
+            $config = ConfigFactory::createFromCommandLine($input);
+            $this->buildLicenser($config, $logger)->process($mode);
         }
 
         $logger->finishProcess();
@@ -134,204 +136,17 @@ class LicenserCommand extends Command
     }
 
     /**
-     * processFromInput.
-     *
-     * @param InputInterface $input
-     * @param string         $mode
-     * @param ProcessLogger  $logger
-     */
-    private function processFromInput(InputInterface $input, $mode, ProcessLogger $logger)
-    {
-        $configArray = $this->parseInput($input);
-        $this->buildLicenser(Config::createFromArray($configArray), $logger)->process($mode);
-    }
-
-    /**
-     * processFromYML.
-     *
-     * @param string         $yml
-     * @param InputInterface $input
-     * @param string         $mode
-     * @param ProcessLogger  $logger
-     */
-    private function processFromYML($yml, InputInterface $input, $mode, ProcessLogger $logger)
-    {
-        $file = new \SplFileInfo(realpath($yml));
-        $workingDir = $file->getPath();
-
-        $ymlConfig = file_get_contents($file->getPathname());
-        $configsArray = $this->parseConfigArray(Yaml::parse($ymlConfig), $workingDir);
-        foreach ($configsArray as $configArray) {
-            //allow source override by command
-            //https://github.com/rafrsr/licenser/issues/1
-            if ($source = $this->getSource($input)) {
-                $this->overrideConfigSource($configArray, $source);
-            }
-
-            $this->buildLicenser(Config::createFromArray($configArray), $logger)->process($mode);
-        }
-    }
-
-    /**
-     * Extract source from input
-     *
      * @param InputInterface $input
      *
-     * @return bool
+     * @return null|\SplFileInfo
      */
-    private function getSource(InputInterface $input)
+    private function extractConfigFile(InputInterface $input)
     {
-        $validSource = ($source = $input->getArgument('source')) && file_exists($source);
-
-        if ($validSource && $input->getOption('config')) {
-            //if the source file is the config file, is not a source
-            if (realpath($source) === realpath($input->getOption('config'))) {
-                $source = null;
-            }
-        } elseif (!$validSource) {
-            $source = null;
+        $yml = $input->getOption('config');
+        if ($yml) {
+            return new \SplFileInfo(realpath($yml));
         }
 
-        return $source;
-    }
-
-    /**
-     * allow source override by command
-     * https://github.com/rafrsr/licenser/issues/1
-     * Add current path and change the name from *.php to given filename in case of file
-     *
-     * @param $configArray
-     * @param $source
-     */
-    private function overrideConfigSource(&$configArray, $source)
-    {
-        $source = realpath($source);
-        $ins = isset($configArray['finder']['in']) ? $configArray['finder']['in'] : [];
-        //obtaining related path based on "in" directories
-        //allowing filter results using the finder config
-        foreach ($ins as $in) {
-            if (strpos($source, $in) !== false) {
-                $path = str_replace($in, null, $source);
-                //remove any \ or / in the path start
-                $path = preg_replace('/^[\/\\\]/', null, $path);
-                $path = str_replace('\\', '/', $path); //convert \ -> /
-                if (is_file($source)) {
-                    $path = pathinfo($path, PATHINFO_DIRNAME);
-                }
-                $configArray['finder']['path'] = $path;
-            }
-        }
-
-        if (is_file($source)) {
-            $configArray['finder']['name'] = pathinfo($source, PATHINFO_BASENAME);
-        }
-    }
-
-    /**
-     * Parse input and return config array.
-     *
-     * @param InputInterface $input
-     *
-     * @return array array with config, ready to create a config instance
-     */
-    private function parseInput(InputInterface $input)
-    {
-        $source = $input->getArgument('source');
-        $license = $input->getArgument('license');
-        $configArray = [];
-
-        $finder = [];
-        if ($input->getOption('finder')) {
-            foreach ($input->getOption('finder') as $finderOption) {
-                if (strpos($finderOption, ':') !== false) {
-                    list($option, $value) = explode(':', $finderOption, 2);
-                    $finder[$option][] = $value;
-                } else {
-                    $msg = sprintf('Invalid finder option "%s", should have the format "option:value", e.g. -f notName:*Test.php', $finderOption);
-                    throw new \InvalidArgumentException($msg);
-                }
-            }
-        }
-        $configArray['finder'] = $finder;
-
-        if (file_exists($source)) {
-            if (is_dir($source)) {
-                $finder['name'] = '*.php';
-                $finder['in'] = realpath($source);
-            } else {
-                $file = new \SplFileInfo($source);
-                $finder['name'] = $file->getFilename();
-                $finder['in'] = realpath($file->getPath());
-                $finder['depth'] = 0;
-            }
-        } else {
-            throw new FileNotFoundException(null, 0, null, $source);
-        }
-        $configArray['finder'] = $finder;
-
-        $params = [];
-        if ($input->getOption('param')) {
-            foreach ($input->getOption('param') as $param) {
-                if (strpos($param, ':') !== false) {
-                    list($name, $value) = explode(':', $param, 2);
-                    $params[$name] = $value;
-                } else {
-                    $msg = sprintf('Invalid parameter "%s", should have the format "name:value", e.g. -p year:%s -p owner:"My Name <email@example.com>"', $param, date('Y'));
-                    throw new \InvalidArgumentException($msg);
-                }
-            }
-        }
-
-        $configArray['parameters'] = $params;
-        $configArray['license'] = $license;
-
-        return $configArray;
-    }
-
-    /**
-     * Parse config array from yml and return array of configs parsed.
-     * One yml config can contain multiple configuration to process
-     * when use multiple finders.
-     *
-     * @param array  $configArray
-     * @param string $workingDir
-     *
-     * @return array
-     */
-    private function parseConfigArray($configArray, $workingDir = null)
-    {
-        $configs = [];
-        if (isset($configArray['finder'])) {
-            if (!isset($configArray['license_content'])) {
-                $license = isset($configArray['license']) ? $configArray['license'] : 'default';
-                //resolve absolute path
-                if (file_exists($workingDir.DIRECTORY_SEPARATOR.$license)) {
-                    $license = $workingDir.DIRECTORY_SEPARATOR.$license;
-                }
-                $configArray['license'] = $license;
-            }
-
-            if (isset($configArray['finder']['in'])) {
-                $inArray = [];
-                foreach ((array) $configArray['finder']['in'] as $in) {
-                    $inArray[] = $workingDir.DIRECTORY_SEPARATOR.$in;
-                }
-                $configArray['finder']['in'] = $inArray;
-            }
-
-            if (!isset($configArray['finder']['name'])) {
-                $configArray['finder']['name'] = '*.php';
-            }
-
-            return [$configArray];
-        } elseif (isset($configArray['finders'])) {
-            foreach ($configArray['finders'] as $finder) {
-                $config = array_merge($configArray, ['finder' => $finder]);
-                unset($config['finders']);
-                $configs = array_merge($configs, $this->parseConfigArray($config, $workingDir));
-            }
-        }
-
-        return $configs;
+        return;
     }
 }

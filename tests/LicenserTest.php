@@ -52,7 +52,7 @@ EOS;
         $this->config->setParameters(['package' => 'Licenser'])
             ->setLicense(file_get_contents($this->fixturesDir.DIRECTORY_SEPARATOR.'license'));
 
-        $this->config->getFinder()->name('*.js');
+        $this->config->getFinderBuilder()->name('*.js');
         Licenser::create($this->config, $this->logger)->process(Licenser::MODE_NORMAL);
 
         $expected = $this->fixturesDir.DIRECTORY_SEPARATOR.'expected'.DIRECTORY_SEPARATOR;
@@ -112,7 +112,7 @@ EOS;
 
     public function testLicenserCheckOnly()
     {
-        $this->config->getFinder()->name('*.js');
+        $this->config->getFinderBuilder()->name('*.js');
         Licenser::create($this->config, $this->logger)->process(Licenser::MODE_CHECK_ONLY);
         $this->logger->startProcess(Licenser::MODE_CHECK_ONLY);
         $expected

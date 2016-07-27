@@ -110,7 +110,8 @@ class Licenser
     {
         $license = $this->parseLicense($this->config->getLicense());
 
-        foreach ($this->config->getFinder()->files() as $file) {
+        $finder = $this->config->getFinderBuilder()->build();
+        foreach ($finder->files() as $file) {
             $content = $file->getContents();
             $licensedContent = null;
             //match license in the file header

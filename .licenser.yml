@@ -5,12 +5,6 @@ finders:
       - tests
     notPath:
       - 'Fixtures'
-  javascript:
-     in:
-      - web\
-     name: '*.js'
-     notPath:
-      - vendor
 parameters:
    author: Rafael SR <https://github.com/rafrsr>
    package: Licenser

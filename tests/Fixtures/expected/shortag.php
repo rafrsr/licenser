@@ -1,4 +1,4 @@
-<?
+<?php
 
 /*
  * Custom License Text project Licenser

@@ -13,8 +13,6 @@
 
 namespace Rafrsr\Licenser;
 
-use Symfony\Component\Finder\Finder;
-
 /**
  * Config.
  *
@@ -28,14 +26,22 @@ class Config
     protected $license;
 
     /**
-     * @var Finder
+     * @var FinderBuilder
      */
-    protected $finder;
+    protected $finderBuilder;
 
     /**
      * @var array
      */
     protected $parameters = [];
+
+    /**
+     * Config constructor.
+     */
+    public function __construct()
+    {
+        $this->finderBuilder = FinderBuilder::create();
+    }
 
     /**
      * create.
@@ -45,87 +51,6 @@ class Config
     public static function create()
     {
         return new static();
-    }
-
-    /**
-     * Array containing configuration.
-     *
-     * e.g.
-     * [
-     *  'finder' => ['in'=>'absolute/path/to/src']
-     *  'license' => 'mit',
-     *  'parameters => ['author'=>'AuthorName']
-     * ]
-     * All paths given in the array should be absolute paths.
-     * At this point licenser can`t resolve relative paths
-     *
-     * @param array $configArray
-     *
-     * @throws \InvalidArgumentException
-     *
-     * @return $this
-     */
-    public static function createFromArray($configArray)
-    {
-        if (isset($configArray['license_content'])) {
-            $license = $configArray['license_content'];
-        } else {
-            $license = isset($configArray['license']) ? $configArray['license'] : 'default';
-            if (file_exists($license)) {
-                $license = file_get_contents($license);
-            } elseif (file_exists(self::resolveBuildInLicense($license))) {
-                $license = file_get_contents(self::resolveBuildInLicense($license));
-            } else {
-                throw new \InvalidArgumentException(sprintf('Invalid license file "%s"', $license));
-            }
-        }
-
-        $parameters = [];
-        if (isset($configArray['parameters'])) {
-            foreach ($configArray['parameters'] as $name => $value) {
-                //try to resolve constants
-                if (strpos($value, '@') === 0 && defined(substr($value, 1))) {
-                    $value = constant(substr($value, 1));
-                }
-
-                $parameters[$name] = $value;
-            }
-        }
-
-        if (!isset($configArray['finder']['name'])) {
-            $configArray['finder']['name'] = '*.php'; //default file types
-        }
-
-        if (!isset($configArray['finder']['in'])) {
-            throw new \LogicException('Invalid configuration, at least one source is required to locate files.');
-        }
-
-        $finder = new Finder();
-        if (isset($configArray['finder'])) {
-            foreach ($configArray['finder'] as $method => $arguments) {
-                if (false === method_exists($finder, $method)) {
-                    throw new \InvalidArgumentException(
-                        sprintf(
-                            'The method "Finder::%s" does not exist.',
-                            $method
-                        )
-                    );
-                }
-
-                $arguments = (array) $arguments;
-
-                foreach ($arguments as $argument) {
-                    $finder->$method($argument);
-                }
-            }
-        }
-
-        $config = self::create()
-            ->setLicense($license)
-            ->setParameters($parameters)
-            ->setFinder($finder);
-
-        return $config;
     }
 
     /**
@@ -149,21 +74,21 @@ class Config
     }
 
     /**
-     * @return Finder
+     * @return FinderBuilder
      */
-    public function getFinder()
+    public function getFinderBuilder()
     {
-        return $this->finder;
+        return $this->finderBuilder;
     }
 
     /**
-     * @param Finder $finder
+     * @param FinderBuilder $finderBuilder
      *
      * @return $this
      */
-    public function setFinder($finder)
+    public function setFinderBuilder(FinderBuilder $finderBuilder)
     {
-        $this->finder = $finder;
+        $this->finderBuilder = $finderBuilder;
 
         return $this;
     }
@@ -210,20 +135,5 @@ class Config
     public function hasParameter($key)
     {
         return array_key_exists($key, $this->parameters);
-    }
-
-    /**
-     * Resolve local license full path for passed build in license name.
-     *
-     * @param string $license
-     *
-     * @return null|string string with full path or null if the license cant be resolved
-     */
-    private static function resolveBuildInLicense($license)
-    {
-        $license = implode(DIRECTORY_SEPARATOR, [__DIR__, 'licenses', $license]);
-        if (file_exists($license)) {
-            return $license;
-        }
     }
 }

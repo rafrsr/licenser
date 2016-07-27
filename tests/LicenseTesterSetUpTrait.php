@@ -14,10 +14,10 @@
 namespace Rafrsr\Licenser\Tests;
 
 use Rafrsr\Licenser\Config;
+use Rafrsr\Licenser\FinderBuilder;
 use Rafrsr\Licenser\ProcessLogger;
 use Symfony\Component\Console\Tests\Fixtures\DummyOutput;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Finder\Finder;
 
 trait LicenseTesterSetUpTrait
 {
@@ -58,8 +58,8 @@ trait LicenseTesterSetUpTrait
         $fileSystem->mirror($this->fixturesDir.DIRECTORY_SEPARATOR.'origin', $this->tempDir, null, ['override' => true]);
         $fileSystem->copy($this->fixturesDir.DIRECTORY_SEPARATOR.'license', $this->tempDir.DIRECTORY_SEPARATOR.'license', true);
 
-        $finder = Finder::create()->in($this->tempDir)->name('*.php');
-        $this->config = (Config::create()->setFinder($finder));
+        $finder = FinderBuilder::create()->in($this->tempDir)->name('*.php');
+        $this->config = (Config::create()->setFinderBuilder($finder));
         $this->config->setLicense(file_get_contents(implode(DIRECTORY_SEPARATOR, [__DIR__, '..', 'src', 'licenses', 'default'])));
         $this->output = new DummyOutput();
         $this->logger = new ProcessLogger($this->output);
