@@ -46,25 +46,7 @@ class ConfigFactory
             $license = $configArray['license_content'];
         } else {
             $license = isset($configArray['license']) ? $configArray['license'] : 'default';
-            if (file_exists($license)) {
-                $license = file_get_contents($license);
-            } elseif (file_exists(self::resolveBuildInLicense($license))) {
-                $license = file_get_contents(self::resolveBuildInLicense($license));
-            } else {
-                throw new \InvalidArgumentException(sprintf('Invalid license file "%s"', $license));
-            }
-        }
-
-        $parameters = [];
-        if (isset($configArray['parameters'])) {
-            foreach ($configArray['parameters'] as $name => $value) {
-                //try to resolve constants
-                if (strpos($value, '@') === 0 && defined(substr($value, 1))) {
-                    $value = constant(substr($value, 1));
-                }
-
-                $parameters[$name] = $value;
-            }
+            $license = self::getLicenseContent($license);
         }
 
         if (!isset($configArray['finder']['in'])) {
@@ -75,9 +57,12 @@ class ConfigFactory
             $configArray['finder']['name'] = '*.php'; //default file types
         }
 
+        $parameters = isset($configArray['parameters']) ? $configArray['parameters'] : [];
+        $resolvedParameters = self::resolveParameters($parameters);
+
         $config = Config::create()
             ->setLicense($license)
-            ->setParameters($parameters)
+            ->setParameters($resolvedParameters)
             ->setFinderBuilder(FinderBuilder::create($configArray['finder']));
 
         return $config;
@@ -99,7 +84,6 @@ class ConfigFactory
         $finder = self::extractFromCommandLine($input, 'finder');
         if (file_exists($source)) {
             if (is_dir($source)) {
-                $finder['name'] = '*.php';
                 $finder['in'] = realpath($source);
             } else {
                 $file = new \SplFileInfo($source);
@@ -156,6 +140,45 @@ class ConfigFactory
         }
 
         return $configs;
+    }
+
+    /**
+     * Resolve parameters value using constants
+     *
+     * @param array $parameters
+     *
+     * @return array resolved parameters
+     */
+    private static function resolveParameters(array $parameters)
+    {
+        foreach ($parameters as &$parameter) {
+            //try to resolve constants
+            if (strpos($parameter, '@') === 0 && defined(substr($parameter, 1))) {
+                $parameter = constant(substr($parameter, 1));
+            }
+        }
+
+        return $parameters;
+    }
+
+    /**
+     * Resolve parameters value using constants
+     *
+     * @param string $licenseFile
+     *
+     * @return array resolved parameters
+     */
+    private static function getLicenseContent($licenseFile)
+    {
+        if (file_exists($licenseFile)) {
+            $content = file_get_contents($licenseFile);
+        } elseif (file_exists(self::resolveBuildInLicense($licenseFile))) {
+            $content = file_get_contents(self::resolveBuildInLicense($licenseFile));
+        } else {
+            throw new \InvalidArgumentException(sprintf('Invalid license file "%s"', $licenseFile));
+        }
+
+        return $content;
     }
 
     /**
