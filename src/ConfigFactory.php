@@ -13,6 +13,7 @@
 
 namespace Rafrsr\Licenser;
 
+use Rafrsr\Licenser\Command\DynamicParameterResolver;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Filesystem\Exception\FileNotFoundException;
 use Symfony\Component\Yaml\Yaml;
@@ -81,7 +82,7 @@ class ConfigFactory
         $license = $input->getArgument('license');
         $configArray = [];
 
-        $finder = self::extractFromCommandLine($input, 'finder');
+        $finder = DynamicParameterResolver::create('finder')->resolve($input);
         if (file_exists($source)) {
             if (is_dir($source)) {
                 $finder['in'] = realpath($source);
@@ -95,7 +96,7 @@ class ConfigFactory
             throw new FileNotFoundException(null, 0, null, $source);
         }
         $configArray['finder'] = $finder;
-        $configArray['parameters'] = self::extractFromCommandLine($input, 'param');
+        $configArray['parameters'] = DynamicParameterResolver::create('param')->resolve($input);
         $configArray['license'] = $license;
 
         return self::createFromArray($configArray);
@@ -268,44 +269,6 @@ class ConfigFactory
         if (is_file($source)) {
             $config->getFinderBuilder()->clearName()->name(pathinfo($source, PATHINFO_BASENAME));
         }
-    }
-
-    /**
-     * Extract array of parameters from command line input.
-     *
-     * @param InputInterface $input
-     * @param string         $argumentName
-     *
-     * @return array
-     */
-    private static function extractFromCommandLine(InputInterface $input, $argumentName)
-    {
-        $params = [];
-        if ($input->getOption($argumentName)) {
-            foreach ($input->getOption($argumentName) as $param) {
-                if (strpos($param, ':') !== false) {
-                    list($name, $value) = explode(':', $param, 2);
-                    if (array_key_exists($name, $params)) {
-                        if (!is_array($params[$name])) {
-                            $params[$name] = [
-                                $params[$name],
-                                $value,
-                            ];
-                        } else {
-                            $params[$name][] = $value;
-                        }
-                    } else {
-                        $params[$name] = $value;
-                    }
-
-                } else {
-                    $msg = sprintf('Invalid parameter "%s", should have the format "name:value"', $param);
-                    throw new \InvalidArgumentException($msg);
-                }
-            }
-        }
-
-        return $params;
     }
 
     /**
