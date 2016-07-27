@@ -260,7 +260,7 @@ class ConfigFactoryTest extends \PHPUnit_Framework_TestCase
         ConfigFactory::createFromCommandLine($input);
     }
 
-    public function testCreateFromCommandLineInputFinder()
+    public function testCreateFromCommandLineCustomFinder()
     {
         $config = Config::create()
             ->setLicense(file_get_contents(implode(DIRECTORY_SEPARATOR, [__DIR__, '..', 'src', 'licenses', 'default'])))
@@ -269,7 +269,7 @@ class ConfigFactoryTest extends \PHPUnit_Framework_TestCase
                     [
                         'in' => realpath($this->tempDir),
                         'name' => '*.php',
-                        'notName' => '*Test.php',
+                        'notName' => ['*Test.php', '*Interface.php', 'Other.php'],
                         'exclude' => 'vendor',
                     ]
                 )
@@ -280,6 +280,8 @@ class ConfigFactoryTest extends \PHPUnit_Framework_TestCase
                 'source' => realpath($this->tempDir),
                 '-f' => [
                     'notName:*Test.php',
+                    'notName:*Interface.php',
+                    'notName:Other.php',
                     'exclude:vendor',
                 ],
             ]

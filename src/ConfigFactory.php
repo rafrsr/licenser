@@ -285,8 +285,8 @@ class ConfigFactory
             foreach ($input->getOption($argumentName) as $param) {
                 if (strpos($param, ':') !== false) {
                     list($name, $value) = explode(':', $param, 2);
-                    if (array_key_exists($name, $params) && !is_array($params[$name])) {
-                        if (is_array($params[$name])) {
+                    if (array_key_exists($name, $params)) {
+                        if (!is_array($params[$name])) {
                             $params[$name] = [
                                 $params[$name],
                                 $value,
