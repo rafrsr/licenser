@@ -159,7 +159,11 @@ class Licenser
 
         //create license comment
         $license = preg_replace("/\n/", "\n * ", $license);
-        $license = preg_replace("/ \* \n/", " *\n", $license);//clean empty lines, remove trailing whitespace
+
+        //clean empty lines, remove trailing whitespace
+        $license = preg_replace("/ \* \n/", " *\n", $license);
+
+        //wrapper
         $license = "/*\n * $license\n */\n";
 
         return $license;
