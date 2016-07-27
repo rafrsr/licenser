@@ -96,7 +96,7 @@ class ConfigFactory
         $license = $input->getArgument('license');
         $configArray = [];
 
-        $finder = self::extractFinderSettingsFromCommandLine($input);
+        $finder = self::extractFromCommandLine($input, 'finder');
         if (file_exists($source)) {
             if (is_dir($source)) {
                 $finder['name'] = '*.php';
@@ -111,7 +111,7 @@ class ConfigFactory
             throw new FileNotFoundException(null, 0, null, $source);
         }
         $configArray['finder'] = $finder;
-        $configArray['parameters'] = self::extractParametersFromCommandLine($input);
+        $configArray['parameters'] = self::extractFromCommandLine($input, 'param');
         $configArray['license'] = $license;
 
         return self::createFromArray($configArray);
@@ -251,50 +251,38 @@ class ConfigFactory
      * Extract array of parameters from command line input.
      *
      * @param InputInterface $input
+     * @param string         $argumentName
      *
      * @return array
      */
-    private static function extractParametersFromCommandLine(InputInterface $input)
+    private static function extractFromCommandLine(InputInterface $input, $argumentName)
     {
         $params = [];
-        if ($input->getOption('param')) {
-            foreach ($input->getOption('param') as $param) {
+        if ($input->getOption($argumentName)) {
+            foreach ($input->getOption($argumentName) as $param) {
                 if (strpos($param, ':') !== false) {
                     list($name, $value) = explode(':', $param, 2);
-                    $params[$name] = $value;
+                    if (array_key_exists($name, $params) && !is_array($params[$name])) {
+                        if (is_array($params[$name])) {
+                            $params[$name] = [
+                                $params[$name],
+                                $value,
+                            ];
+                        } else {
+                            $params[$name][] = $value;
+                        }
+                    } else {
+                        $params[$name] = $value;
+                    }
+
                 } else {
-                    $msg = sprintf('Invalid parameter "%s", should have the format "name:value", e.g. -p year:%s -p owner:"My Name <email@example.com>"', $param, date('Y'));
+                    $msg = sprintf('Invalid parameter "%s", should have the format "name:value"', $param);
                     throw new \InvalidArgumentException($msg);
                 }
             }
         }
 
         return $params;
-    }
-
-    /**
-     * Extract settings finder from command line.
-     *
-     * @param InputInterface $input
-     *
-     * @return array
-     */
-    private static function extractFinderSettingsFromCommandLine(InputInterface $input)
-    {
-        $finder = [];
-        if ($input->getOption('finder')) {
-            foreach ($input->getOption('finder') as $finderOption) {
-                if (strpos($finderOption, ':') !== false) {
-                    list($option, $value) = explode(':', $finderOption, 2);
-                    $finder[$option][] = $value;
-                } else {
-                    $msg = sprintf('Invalid finder option "%s", should have the format "option:value", e.g. -f notName:*Test.php', $finderOption);
-                    throw new \InvalidArgumentException($msg);
-                }
-            }
-        }
-
-        return $finder;
     }
 
     /**

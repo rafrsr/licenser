@@ -269,8 +269,8 @@ class ConfigFactoryTest extends \PHPUnit_Framework_TestCase
                     [
                         'in' => realpath($this->tempDir),
                         'name' => '*.php',
-                        'notName' => ['*Test.php'],
-                        'exclude' => ['vendor'],
+                        'notName' => '*Test.php',
+                        'exclude' => 'vendor',
                     ]
                 )
             );
@@ -298,7 +298,7 @@ class ConfigFactoryTest extends \PHPUnit_Framework_TestCase
                 ],
             ]
         );
-        self::setExpectedExceptionRegExp(\InvalidArgumentException::class, '/Invalid finder option "vendor"/');
+        self::setExpectedExceptionRegExp(\InvalidArgumentException::class, '/Invalid parameter "vendor"/');
 
         ConfigFactory::createFromCommandLine($input);
     }
