@@ -113,6 +113,12 @@ class Licenser
         $finder = $this->config->getFinderBuilder()->build();
         foreach ($finder->files() as $file) {
             $content = $file->getContents();
+
+            //convert line separators, force use Unix style
+            if (strpos($content, "\r\n") !== false) {
+                $content = str_replace("\r\n", "\n", $content);
+            }
+
             $licensedContent = null;
             //match license in the file header
             if (preg_match('/^(?\'opentag\'(\S{1,5})?\n+)?(?\'license\'\/\**(\s?\**[\S ]+\n*)((?m)^\s*\*[\S ]*\n)+)/', $content, $matches)) {
